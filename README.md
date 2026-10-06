@@ -1,6 +1,6 @@
 # Clothing Store
 
-A web app split into a separate frontend and backend.
+A web app for clothing businesses/brands and more.
 
 ## Project structure
 
