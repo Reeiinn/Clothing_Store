@@ -1,9 +1,27 @@
 # Clothing Store
 
-| Part        | Stack                                                                 | Port |
-| ----------- | --------------------------------------------------------------------- | ---- |
-| `frontend/` | T3 Stack: Next.js 15, tRPC, Prisma (PostgreSQL), NextAuth, Tailwind v4 | 3000 |
-| `backend/`  | Node, Express, TypeScript                                             | 4000 |
+A web app split into a separate frontend and backend.
+
+## Project structure
+
+```
+ClothingStore/
+├── package.json        ← root scripts (runs both apps)
+├── frontend/           ← Next.js app
+│   ├── src/app/
+│   ├── public/
+│   └── package.json
+└── backend/            ← Node + Express + TypeScript API
+    ├── src/index.ts
+    ├── .env.example
+    ├── tsconfig.json
+    └── package.json
+```
+
+| Part     | Stack                                                          | Port |
+| -------- | -------------------------------------------------------------- | ---- |
+| Frontend | Next.js 16, React 19, TypeScript, App Router, Tailwind CSS v4 | 3000 |
+| Backend  | Node, Express, TypeScript                                      | 4000 |
 
 ## Setup
 
