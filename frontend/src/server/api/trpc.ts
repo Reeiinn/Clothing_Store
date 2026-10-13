@@ -131,3 +131,19 @@ export const protectedProcedure = t.procedure
       },
     });
   });
+
+/**
+ * Admin-only procedure
+ *
+ * Checks the role in the database, not the session, so a demoted admin loses access immediately.
+ */
+export const adminProcedure = protectedProcedure.use(async ({ ctx, next }) => {
+  const user = await ctx.db.user.findUnique({
+    where: { id: ctx.session.user.id },
+    select: { role: true },
+  });
+  if (user?.role !== "ADMIN") {
+    throw new TRPCError({ code: "FORBIDDEN", message: "Admins only." });
+  }
+  return next();
+});

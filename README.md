@@ -1,27 +1,22 @@
 # Clothing Store
 
-A web app split into a separate frontend and backend.
+A clothing store web app built with the T3 stack. The API is tRPC inside the Next.js app.
 
 ## Project structure
 
 ```
 ClothingStore/
-├── package.json        ← root scripts (runs both apps)
-├── frontend/           ← Next.js app
-│   ├── src/app/
-│   ├── public/
-│   └── package.json
-└── backend/            ← Node + Express + TypeScript API
-    ├── src/index.ts
-    ├── .env.example
-    ├── tsconfig.json
+├── package.json        ← root scripts
+└── frontend/           ← Next.js app
+    ├── prisma/
+    ├── src/app/
+    ├── src/server/     ← tRPC routers, auth, db
     └── package.json
 ```
 
-| Part     | Stack                                                          | Port |
-| -------- | -------------------------------------------------------------- | ---- |
-| Frontend | Next.js 16, React 19, TypeScript, App Router, Tailwind CSS v4 | 3000 |
-| Backend  | Node, Express, TypeScript                                      | 4000 |
+| Part | Stack                                                                     | Port |
+| ---- | ------------------------------------------------------------------------- | ---- |
+| App  | Next.js 15, React 19, TypeScript, tRPC, Prisma, NextAuth, Tailwind CSS v4 | 3000 |
 
 ## Setup
 
@@ -31,23 +26,20 @@ Requires Node.js 20+ and a PostgreSQL database.
 npm run install:all
 ```
 
-Copy `frontend/.env.example` to `frontend/.env` and fill in `AUTH_SECRET` (`npx auth secret`) and `DATABASE_URL`. `frontend/start-database.sh` starts a local Postgres in Docker.
+Copy `frontend/.env.example` to `frontend/.env` and fill in `AUTH_SECRET` (`npx auth secret`), `DATABASE_URL` and the `SEED_*` passwords. `frontend/start-database.sh` starts a local Postgres in Docker.
 
-Push the schema to the database:
+Create the tables and seed sample data (the seed wipes products and orders):
 
 ```bash
-npm run db:push --prefix frontend
+cd frontend
+npx prisma migrate dev
+npm run db:seed
 ```
 
-Start both apps:
+Start the app:
 
 ```bash
 npm run dev
 ```
 
-## Backend configuration
-
-| Variable       | Default                 |
-| -------------- | ----------------------- |
-| `PORT`         | `4000`                  |
-| `FRONTEND_URL` | `http://localhost:3000` |
+Seeded accounts: `admin@stylegrid.test` (admin) and `customer@stylegrid.test`.
