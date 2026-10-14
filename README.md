@@ -6,12 +6,11 @@ A clothing store web app built with the T3 stack. The API is tRPC inside the Nex
 
 ```
 ClothingStore/
-├── package.json        ← root scripts
-└── frontend/           ← Next.js app
-    ├── prisma/
-    ├── src/app/
-    ├── src/server/     ← tRPC routers, auth, db
-    └── package.json
+├── prisma/         ← schema, migrations, seed
+├── public/
+├── src/app/        ← pages
+├── src/server/     ← tRPC routers, auth, db
+└── package.json
 ```
 
 | Part | Stack                                                                     | Port |
@@ -23,15 +22,14 @@ ClothingStore/
 Requires Node.js 20+ and a PostgreSQL database.
 
 ```bash
-npm run install:all
+npm install
 ```
 
-Copy `frontend/.env.example` to `frontend/.env` and fill in `AUTH_SECRET` (`npx auth secret`), `DATABASE_URL` and the `SEED_*` passwords. `frontend/start-database.sh` starts a local Postgres in Docker.
+Copy `.env.example` to `.env` and fill in `AUTH_SECRET` (`npx auth secret`), `DATABASE_URL` and the `SEED_*` passwords. `start-database.sh` starts a local Postgres in Docker.
 
 Create the tables and seed sample data (the seed wipes products and orders):
 
 ```bash
-cd frontend
 npx prisma migrate dev
 npm run db:seed
 ```
