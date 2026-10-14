@@ -26,6 +26,9 @@ const colors = [
   { name: "Navy", slug: "navy", hex: "#1F2A44" },
   { name: "White", slug: "white", hex: "#F5F5F5" },
   { name: "Red", slug: "red", hex: "#C0392B" },
+  { name: "Olive", slug: "olive", hex: "#5B6236" },
+  { name: "Sand", slug: "sand", hex: "#D6C6A5" },
+  { name: "Grey", slug: "grey", hex: "#8A8D91" },
 ];
 
 // [name, category slug, gender, price in pesos, color slugs]
@@ -37,18 +40,36 @@ const products: [string, string, Gender, number, string[]][] = [
     599,
     ["black", "navy", "white", "red"],
   ],
-  ["Boxy Pocket Tee", "tops", "MEN", 649, ["black", "white", "navy"]],
-  ["Linen Camp Shirt", "tops", "MEN", 1299, ["white", "navy"]],
+  ["Boxy Pocket Tee", "tops", "MEN", 649, ["black", "white", "navy", "olive"]],
+  ["Linen Camp Shirt", "tops", "MEN", 1299, ["white", "navy", "sand"]],
   ["Ribbed Tank", "tops", "WOMEN", 449, ["black", "white", "red"]],
-  ["Oxford Button-Down", "tops", "MEN", 1199, ["white", "navy"]],
-  ["Cropped Polo", "tops", "WOMEN", 799, ["black", "red"]],
-  ["Coach Jacket", "outerwear", "MEN", 2499, ["black", "navy"]],
-  ["Quilted Vest", "outerwear", "WOMEN", 1999, ["black", "red"]],
-  ["Straight Jeans", "denim", "MEN", 1899, ["navy", "black"]],
-  ["Wide-Leg Jeans", "denim", "WOMEN", 1999, ["navy", "white"]],
-  ["Pleated Trousers", "bottoms", "MEN", 1499, ["black", "navy"]],
+  ["Oxford Button-Down", "tops", "MEN", 1199, ["white", "navy", "grey"]],
+  ["Cropped Polo", "tops", "WOMEN", 799, ["black", "red", "white"]],
+  ["Coach Jacket", "outerwear", "MEN", 2499, ["black", "navy", "olive"]],
+  ["Quilted Vest", "outerwear", "WOMEN", 1999, ["black", "red", "sand"]],
+  ["Straight Jeans", "denim", "MEN", 1899, ["navy", "black", "grey"]],
+  ["Wide-Leg Jeans", "denim", "WOMEN", 1999, ["navy", "white", "black"]],
+  ["Pleated Trousers", "bottoms", "MEN", 1499, ["black", "navy", "sand"]],
   ["Cable Knit Sweater", "knitwear", "WOMEN", 1799, ["white", "red", "navy"]],
+  ["Utility Overshirt", "outerwear", "MEN", 2199, ["olive", "black", "sand"]],
+  ["Midi Slip Skirt", "bottoms", "WOMEN", 1299, ["black", "sand", "navy"]],
+  [
+    "Merino Crewneck",
+    "knitwear",
+    "MEN",
+    2299,
+    ["grey", "navy", "black", "olive"],
+  ],
+  ["Cropped Denim Jacket", "denim", "WOMEN", 2399, ["navy", "black", "white"]],
 ];
+
+const fitNotes: Record<string, string> = {
+  tops: "True to size.",
+  outerwear: "Roomy fit for layering. Size down if between sizes.",
+  denim: "Runs small. Size up if between sizes.",
+  bottoms: "True to size.",
+  knitwear: "Relaxed fit. Size down for a closer fit.",
+};
 
 // Fixed pattern (not Math.random) so everyone gets the same stock:
 // a mix of sold out, low and normal.
@@ -204,6 +225,7 @@ async function main() {
         gender,
         description: `${name} in a relaxed everyday fit.`,
         fabric: "100% cotton",
+        fitNotes: fitNotes[catSlug],
         priceCents: pesos * 100,
         categoryId: cat[catSlug]!.id,
         createdAt: daysAgo(index),
@@ -248,7 +270,9 @@ async function main() {
   });
 
   await db.address.deleteMany({ where: { userId: customer.id } });
-  await db.address.create({ data: { ...address, userId: customer.id } });
+  await db.address.create({
+    data: { ...address, isDefault: true, userId: customer.id },
+  });
 
   for (const o of sampleOrders) {
     const items = await Promise.all(
@@ -273,6 +297,7 @@ async function main() {
     );
     const shippingCents = shippingFee(o.shippingMethod, subtotalCents);
     const path = STATUS_PATH[o.status];
+    const shipped = path.some(([s]) => s === "SHIPPED");
 
     await db.order.create({
       data: {
@@ -284,9 +309,7 @@ async function main() {
         shippingMethod: o.shippingMethod,
         paymentMethod: o.paymentMethod,
         cardLast4: o.paymentMethod === "CARD" ? "4242" : null,
-        trackingNumber: path.some(([s]) => s === "SHIPPED")
-          ? `PH0000${o.daysAgo}`
-          : null,
+        trackingNumber: shipped ? `PH0000${o.daysAgo}` : null,
         shipFullName: address.fullName,
         shipPhone: address.phone,
         shipStreet: address.street,
@@ -295,6 +318,7 @@ async function main() {
         shipProvince: address.province,
         shipPostalCode: address.postalCode,
         createdAt: daysAgo(o.daysAgo),
+        shippedAt: shipped ? daysAgo(o.daysAgo - 1) : null,
         deliveredAt:
           o.status === "DELIVERED"
             ? daysAgo(o.daysAgo - path.length + 1)
