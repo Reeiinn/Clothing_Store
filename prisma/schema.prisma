@@ -50,12 +50,14 @@ enum ReturnReason {
   SIZE_DIDNT_FIT
   NOT_AS_PICTURED
   DAMAGED
+  WRONG_ITEM
   CHANGED_MIND
   OTHER
 }
 
 enum ReturnStatus {
   REQUESTED
+  APPROVED
   RECEIVED
   REJECTED
 }
@@ -133,6 +135,7 @@ model Product {
   slug        String    @unique
   description String
   fabric      String?
+  fitNotes    String?
   gender      Gender
   priceCents  Int // centavos
   imageUrl    String?
@@ -145,16 +148,17 @@ model Product {
 }
 
 model Variant {
-  id         String      @id @default(cuid())
-  sku        String      @unique
-  productId  String
-  colorId    String
-  size       Size
-  stock      Int         @default(0)
-  product    Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
-  color      Color       @relation(fields: [colorId], references: [id])
-  bagItems   BagItem[]
-  orderItems OrderItem[]
+  id                 String      @id @default(cuid())
+  sku                String      @unique
+  productId          String
+  colorId            String
+  size               Size
+  stock              Int         @default(0)
+  restockRequestedAt DateTime?
+  product            Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  color              Color       @relation(fields: [colorId], references: [id])
+  bagItems           BagItem[]
+  orderItems         OrderItem[]
 
   @@unique([productId, colorId, size])
   @@index([size, stock])
@@ -183,6 +187,7 @@ model Address {
   city       String
   province   String
   postalCode String
+  isDefault  Boolean @default(false)
   user       User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
@@ -207,6 +212,7 @@ model Order {
   shipProvince   String
   shipPostalCode String
   createdAt      DateTime             @default(now())
+  shippedAt      DateTime?
   deliveredAt    DateTime?
   user           User                 @relation(fields: [userId], references: [id])
   items          OrderItem[]
