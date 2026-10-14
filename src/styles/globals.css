@@ -1,6 +1,34 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif,
+  --font-sans:
+    var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif,
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-mono:
+    var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --color-paper: #fafaf8;
+  --color-ink: #111111;
+  --color-muted: #6b6b6b;
+  --color-line: #dcdcdc;
+  --color-placeholder: #ececea;
+
+  --color-ok: #2f6b3a;
+  --color-ok-bg: #e5f0e6;
+  --color-warn: #8a5a00;
+  --color-warn-bg: #fbefd6;
+  --color-danger: #a12a1f;
+  --color-danger-bg: #f8e2df;
+  --color-info: #1f4f8a;
+  --color-info-bg: #e1ebf7;
+}
+
+@layer base {
+  body {
+    @apply bg-paper text-ink font-sans antialiased;
+  }
+
+  :focus-visible {
+    @apply outline-ink outline-2 outline-offset-2;
+  }
 }
