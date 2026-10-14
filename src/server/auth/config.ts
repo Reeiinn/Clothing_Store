@@ -92,6 +92,9 @@ export const authConfig = {
   session: {
     strategy: "jwt",
   },
+  pages: {
+    signIn: "/login",
+  },
   callbacks: {
     jwt: ({ token, user }) => {
       if (user) {
