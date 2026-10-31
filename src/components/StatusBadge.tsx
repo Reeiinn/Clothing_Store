@@ -1,20 +1,28 @@
-import type { OrderStatus } from "../../generated/prisma";
+import type { OrderStatus, ReturnStatus } from "../../generated/prisma";
 
 import { cx } from "~/lib/cx";
 
 export type StockStatus = "OK" | "LOW" | "SOLD_OUT";
 
-const styles: Record<OrderStatus | StockStatus, string> = {
+const styles: Record<OrderStatus | ReturnStatus | StockStatus, string> = {
   PROCESSING: "bg-warn-bg text-warn",
   SHIPPED: "bg-info-bg text-info",
   DELIVERED: "bg-ok-bg text-ok",
   CANCELLED: "bg-placeholder text-muted",
+  REQUESTED: "bg-warn-bg text-warn",
+  APPROVED: "bg-info-bg text-info",
+  RECEIVED: "bg-ok-bg text-ok",
+  REJECTED: "bg-danger-bg text-danger",
   OK: "bg-ok-bg text-ok",
   LOW: "bg-warn-bg text-warn",
   SOLD_OUT: "bg-danger-bg text-danger",
 };
 
-export function StatusBadge({ status }: { status: OrderStatus | StockStatus }) {
+export function StatusBadge({
+  status,
+}: {
+  status: OrderStatus | ReturnStatus | StockStatus;
+}) {
   return (
     <span
       className={cx(
