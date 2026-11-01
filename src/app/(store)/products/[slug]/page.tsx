@@ -1,8 +1,27 @@
+import { TRPCError } from "@trpc/server";
+import { notFound } from "next/navigation";
+
+import { auth } from "~/server/auth";
+import { api } from "~/trpc/server";
+
+import { ProductView } from "./ProductView";
+
 export default async function ProductPage({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  return <h1 className="text-2xl font-semibold">Product: {slug}</h1>;
+  const [product, session] = await Promise.all([
+    api.product.bySlug({ slug }).catch((error: unknown) => {
+      if (error instanceof TRPCError && error.code === "NOT_FOUND") notFound();
+      throw error;
+    }),
+    auth(),
+  ]);
+
+  // key resets the picked size/color when moving to another product
+  return (
+    <ProductView key={product.id} product={product} signedIn={!!session} />
+  );
 }

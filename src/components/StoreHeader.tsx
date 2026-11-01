@@ -3,17 +3,17 @@ import Link from "next/link";
 import { Suspense } from "react";
 
 import { AuthLinks } from "~/components/AuthLinks";
+import { BagLink } from "~/components/BagLink";
 import { MobileMenu } from "~/components/MobileMenu";
 import { SignOutButton } from "~/components/SignOutButton";
 import { auth } from "~/server/auth";
+import { api } from "~/trpc/server";
 
 const shopLinks = [
   { label: "Men's", href: "/products?gender=men" },
   { label: "Women's", href: "/products?gender=women" },
   { label: "New in", href: "/products?sort=newest" },
 ];
-
-const bagCount = 0;
 
 function SearchBox({ className }: { className?: string }) {
   return (
@@ -55,7 +55,8 @@ async function AccountLinks({ className }: { className?: string }) {
   );
 }
 
-export function StoreHeader() {
+export async function StoreHeader() {
+  const bagCount = await api.bag.count();
   const shopNav = (className: string) => (
     <nav aria-label="Shop" className={className}>
       {shopLinks.map((link) => (
@@ -84,9 +85,7 @@ export function StoreHeader() {
           <Link href="/orders" className="hidden hover:underline lg:inline">
             Orders
           </Link>
-          <Link href="/bag" className="hover:underline">
-            Bag ({bagCount})
-          </Link>
+          <BagLink initialCount={bagCount} />
           <AccountLinks className="hidden items-center gap-5 lg:flex" />
           <MobileMenu>
             <SearchBox />
