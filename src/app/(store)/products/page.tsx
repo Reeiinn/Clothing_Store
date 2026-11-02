@@ -1,3 +1,11 @@
+import { Suspense } from "react";
+
+import { Catalog } from "./Catalog";
+
 export default function Page() {
-  return <h1 className="text-2xl font-semibold">Products</h1>;
+  return (
+    <Suspense>
+      <Catalog />
+    </Suspense>
+  );
 }
