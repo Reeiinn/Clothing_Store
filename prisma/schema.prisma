@@ -139,6 +139,7 @@ model Product {
   gender      Gender
   priceCents  Int // centavos
   imageUrl    String?
+  hidden      Boolean       @default(false)
   categoryId  String
   category    Category      @relation(fields: [categoryId], references: [id])
   variants    Variant[]

@@ -116,7 +116,7 @@ export const bagRouter = createTRPCRouter({
       const userId = ctx.session.user.id;
       const [variant, existing] = await Promise.all([
         ctx.db.variant.findUnique({
-          where: { id: input.variantId },
+          where: { id: input.variantId, product: { hidden: false } },
           select: { stock: true },
         }),
         ctx.db.bagItem.findUnique({

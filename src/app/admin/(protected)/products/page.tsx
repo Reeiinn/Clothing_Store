@@ -92,6 +92,11 @@ export default function AdminProductsPage() {
                     >
                       {product.name}
                     </Link>
+                    {product.hidden && (
+                      <span className="bg-placeholder text-muted px-2 py-0.5 font-mono text-xs whitespace-nowrap">
+                        HIDDEN
+                      </span>
+                    )}
                   </span>
                 </td>
                 <td className={td}>{product.category}</td>

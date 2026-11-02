@@ -31,7 +31,10 @@ const listInput = z.object({
 type ListInput = z.infer<typeof listInput>;
 
 function buildWhere(input: ListInput): Prisma.ProductWhereInput {
-  const and: Prisma.ProductWhereInput[] = [genderWhere(input.gender)];
+  const and: Prisma.ProductWhereInput[] = [
+    { hidden: false },
+    genderWhere(input.gender),
+  ];
   if (input.category) and.push({ category: { slug: input.category } });
   if (input.q) and.push({ name: { contains: input.q, mode: "insensitive" } });
 
@@ -128,7 +131,7 @@ export const productRouter = createTRPCRouter({
   facets: publicProcedure
     .input(z.object({ gender: genderInput.optional() }).default({}))
     .query(async ({ ctx, input }) => {
-      const productWhere = genderWhere(input.gender);
+      const productWhere = { hidden: false, ...genderWhere(input.gender) };
       const [categories, colors] = await Promise.all([
         ctx.db.category.findMany({
           orderBy: { name: "asc" },
@@ -169,7 +172,7 @@ export const productRouter = createTRPCRouter({
         }),
         getLowStockThreshold(ctx.db),
       ]);
-      if (!product) {
+      if (!product || product.hidden) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Product not found.",
