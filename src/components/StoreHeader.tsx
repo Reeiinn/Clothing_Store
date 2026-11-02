@@ -1,4 +1,5 @@
 import Form from "next/form";
+import { headers } from "next/headers";
 import Link from "next/link";
 import { Suspense } from "react";
 
@@ -6,6 +7,7 @@ import { AuthLinks } from "~/components/AuthLinks";
 import { BagLink } from "~/components/BagLink";
 import { MobileMenu } from "~/components/MobileMenu";
 import { SignOutButton } from "~/components/SignOutButton";
+import { adminHost, requestHost } from "~/lib/hosts";
 import { auth } from "~/server/auth";
 import { api } from "~/trpc/server";
 
@@ -45,9 +47,12 @@ async function AccountLinks({ className }: { className?: string }) {
   return (
     <div className={className}>
       {session.user.role === "ADMIN" && (
-        <Link href="/admin/inventory" className="hover:underline">
+        <a
+          href={`//${adminHost(requestHost(await headers()))}/inventory`}
+          className="hover:underline"
+        >
           Admin
-        </Link>
+        </a>
       )}
       <span className="text-muted max-w-40 truncate">{session.user.name}</span>
       <SignOutButton />

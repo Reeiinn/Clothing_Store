@@ -96,7 +96,7 @@ export default function AdminOrdersPage() {
               >
                 <td className={td}>
                   <Link
-                    href={`/admin/orders/${order.number}`}
+                    href={`/orders/${order.number}`}
                     className="font-mono underline"
                   >
                     #{order.number}

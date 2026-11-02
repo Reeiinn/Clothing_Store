@@ -7,15 +7,15 @@ import { cx } from "~/lib/cx";
 
 const links: { label: string; href?: string }[] = [
   { label: "Dashboard" },
-  { label: "Inventory", href: "/admin/inventory" },
+  { label: "Inventory", href: "/inventory" },
   { label: "Products" },
-  { label: "Orders", href: "/admin/orders" },
-  { label: "Return requests", href: "/admin/returns" },
+  { label: "Orders", href: "/orders" },
+  { label: "Return requests", href: "/returns" },
 ];
 
 const item = "flex min-h-11 items-center px-3 text-sm whitespace-nowrap";
 
-export function AdminNav() {
+export function AdminNav({ storeUrl }: { storeUrl: string }) {
   const pathname = usePathname();
 
   return (
@@ -52,12 +52,12 @@ export function AdminNav() {
           </Link>
         );
       })}
-      <Link
-        href="/products"
+      <a
+        href={storeUrl}
         className={cx(item, "underline underline-offset-2 md:mt-4")}
       >
         View store
-      </Link>
+      </a>
     </nav>
   );
 }
