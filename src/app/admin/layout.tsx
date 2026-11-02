@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { auth } from "~/server/auth";
+import { AdminNav } from "./_components/AdminNav";
 
 export default async function AdminLayout({
   children,
@@ -11,35 +12,17 @@ export default async function AdminLayout({
   if (session.user.role !== "ADMIN") redirect("/products");
 
   return (
-    <div className="min-h-screen">
-      <header className="bg-ink text-paper">
-        <div className="mx-auto flex h-14 max-w-7xl items-center gap-6 px-4 sm:px-6">
-          <Link
-            href="/admin/inventory"
-            className="font-semibold tracking-[0.2em]"
-          >
-            STYLEGRID{" "}
-            <span className="font-mono text-xs tracking-wide opacity-70">
-              ADMIN
-            </span>
-          </Link>
-          <nav className="flex gap-5 text-sm">
-            <Link href="/admin/inventory" className="hover:underline">
-              Inventory
-            </Link>
-            <Link href="/admin/orders" className="hover:underline">
-              Orders
-            </Link>
-            <Link href="/admin/returns" className="hover:underline">
-              Return requests
-            </Link>
-          </nav>
-          <Link href="/products" className="ml-auto text-sm hover:underline">
-            View store
-          </Link>
-        </div>
-      </header>
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6">{children}</main>
+    <div className="min-h-screen md:flex">
+      <aside className="bg-placeholder border-ink flex shrink-0 flex-col gap-4 border-b px-4 py-4 md:w-56 md:gap-8 md:border-r md:border-b-0 md:py-8">
+        <Link href="/admin/inventory" className="flex flex-col px-3">
+          <span className="font-semibold tracking-[0.2em]">STYLEGRID</span>
+          <span className="text-muted font-mono text-xs tracking-wide">
+            ADMIN
+          </span>
+        </Link>
+        <AdminNav />
+      </aside>
+      <main className="min-w-0 flex-1 px-4 py-8 sm:px-8">{children}</main>
     </div>
   );
 }

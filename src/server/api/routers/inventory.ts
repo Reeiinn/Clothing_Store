@@ -78,7 +78,7 @@ export const inventoryRouter = createTRPCRouter({
             stock: true,
             restockRequestedAt: true,
             size: true,
-            color: { select: { name: true } },
+            color: { select: { name: true, hex: true } },
             product: {
               select: {
                 id: true,
@@ -98,6 +98,7 @@ export const inventoryRouter = createTRPCRouter({
           productName: variant.product.name,
           category: variant.product.category.name,
           color: variant.color.name,
+          colorHex: variant.color.hex,
           size: variant.size,
           stock: variant.stock,
           status: stockStatus(variant.stock, threshold),

@@ -137,7 +137,7 @@ export function AlertsTable({
     return (
       <p className="border-ink border p-6 text-sm">
         {filter === "ALL"
-          ? "No low-stock or sold-out variants."
+          ? "No low-stock variants 🎉"
           : filter === "SOLD_OUT"
             ? "No sold-out variants."
             : "No low-stock variants."}
@@ -187,7 +187,16 @@ export function AlertsTable({
                   </button>
                 </td>
                 <td className={td}>{item.category}</td>
-                <td className={td}>{item.color}</td>
+                <td className={td}>
+                  <span className="flex items-center gap-2">
+                    <span
+                      aria-hidden
+                      style={{ backgroundColor: item.colorHex }}
+                      className="border-ink size-3 shrink-0 rounded-full border"
+                    />
+                    {item.color}
+                  </span>
+                </td>
                 <td className={`${td} font-mono`}>{item.size}</td>
                 <td className={`${td} text-right font-mono`}>{item.stock}</td>
                 <td className={td}>
