@@ -246,7 +246,7 @@ export const checkoutRouter = createTRPCRouter({
             shipFullName: input.address.fullName,
             shipPhone: input.address.phone,
             shipStreet: input.address.street,
-            shipUnit: input.address.unit || null,
+            shipUnit: input.address.unit ?? null,
             shipCity: input.address.city,
             shipProvince: input.address.province,
             shipPostalCode: input.address.postalCode,
@@ -285,7 +285,7 @@ export const checkoutRouter = createTRPCRouter({
             data: {
               userId,
               ...input.address,
-              unit: input.address.unit || null,
+              unit: input.address.unit ?? null,
             },
           });
         }
