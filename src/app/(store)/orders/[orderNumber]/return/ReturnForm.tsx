@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 
 import { Button, buttonStyles } from "~/components/Button";
-import { ImagePlaceholder } from "~/components/ImagePlaceholder";
+import { ProductImage } from "~/components/ProductImage";
 import { QuantityStepper } from "~/components/QuantityStepper";
 import { cx } from "~/lib/cx";
 import { formatPrice } from "~/lib/format";
@@ -153,8 +153,10 @@ export function ReturnForm({
                     onChange={() => toggle(id)}
                     className="accent-ink size-5 shrink-0"
                   />
-                  <ImagePlaceholder
-                    label={`${item.productName}, ${item.colorName}`}
+                  <ProductImage
+                    src={item.imageUrl}
+                    alt={`${item.productName}, ${item.colorName}`}
+                    sizes="56px"
                     className="h-[75px] w-14 shrink-0"
                   />
                   <span className="flex min-w-0 flex-1 flex-col gap-0.5">

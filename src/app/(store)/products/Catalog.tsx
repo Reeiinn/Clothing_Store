@@ -264,6 +264,7 @@ export function Catalog() {
                       slug={item.slug}
                       name={item.name}
                       priceCents={item.priceCents}
+                      imageUrl={item.imageUrl}
                       colors={item.colors}
                       sizes={
                         !item.sizeRange

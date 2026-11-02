@@ -46,6 +46,7 @@ export const returnsRouter = createTRPCRouter({
               colorName: true,
               size: true,
               quantity: true,
+              variant: { select: { product: { select: { imageUrl: true } } } },
               returnItems: {
                 where: {
                   returnRequest: { status: { not: "REJECTED" } },
@@ -71,6 +72,7 @@ export const returnsRouter = createTRPCRouter({
           orderItemId: item.id,
           productName: item.productName,
           colorName: item.colorName,
+          imageUrl: item.variant.product.imageUrl,
           size: item.size,
           boughtQty: item.quantity,
           alreadyReturnedQty,

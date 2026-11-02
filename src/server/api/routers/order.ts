@@ -99,6 +99,7 @@ export const orderRouter = createTRPCRouter({
         include: {
           items: {
             include: {
+              variant: { select: { product: { select: { imageUrl: true } } } },
               returnItems: {
                 where: {
                   returnRequest: { status: { not: "REJECTED" } },

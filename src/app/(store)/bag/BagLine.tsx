@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 
 import { Button } from "~/components/Button";
-import { ImagePlaceholder } from "~/components/ImagePlaceholder";
+import { ProductImage } from "~/components/ProductImage";
 import { QuantityStepper } from "~/components/QuantityStepper";
 import { formatPrice } from "~/lib/format";
 import { api, type RouterOutputs } from "~/trpc/react";
@@ -88,8 +88,10 @@ export function BagLine({ line }: { line: BagLineData }) {
 
   return (
     <li className="border-ink flex gap-4 border-t py-6 sm:gap-5">
-      <ImagePlaceholder
-        label={`${line.name}, ${line.color}`}
+      <ProductImage
+        src={line.imageUrl}
+        alt={`${line.name}, ${line.color}`}
+        sizes="112px"
         className="h-[110px] w-[82px] shrink-0 sm:h-[149px] sm:w-28"
       />
 
@@ -150,8 +152,10 @@ export function SavedLine({ line }: { line: BagLineData }) {
   return (
     <li className="border-line flex flex-col gap-3 border-b py-4">
       <div className="flex items-center gap-4">
-        <ImagePlaceholder
-          label={`${line.name}, ${line.color}`}
+        <ProductImage
+          src={line.imageUrl}
+          alt={`${line.name}, ${line.color}`}
+          sizes="64px"
           className="h-[85px] w-16 shrink-0"
         />
         <div className="flex min-w-0 flex-1 flex-col gap-1">
