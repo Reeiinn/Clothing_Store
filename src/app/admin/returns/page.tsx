@@ -8,9 +8,10 @@ import { StatusBadge } from "~/components/StatusBadge";
 import { formatPrice } from "~/lib/format";
 import { api, type RouterOutputs } from "~/trpc/react";
 import { errorMessage } from "../_components/error-message";
+import { Pager } from "../_components/Pager";
 import { StatusTabs } from "../_components/StatusTabs";
 
-type ReturnRequest = RouterOutputs["returns"]["adminList"][number];
+type ReturnRequest = RouterOutputs["returns"]["adminList"]["requests"][number];
 type Tab = ReturnRequest["status"];
 
 const tabs: { value: Tab; label: string }[] = [
@@ -100,7 +101,13 @@ function ReturnActions({ request }: { request: ReturnRequest }) {
 
 export default function AdminReturnsPage() {
   const [tab, setTab] = useState<Tab>("REQUESTED");
-  const returns = api.returns.adminList.useQuery({ status: tab });
+  const [page, setPage] = useState(1);
+  const returns = api.returns.adminList.useQuery({ status: tab, page });
+
+  function changeTab(next: Tab) {
+    setTab(next);
+    setPage(1);
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -115,7 +122,7 @@ export default function AdminReturnsPage() {
           label="Filter returns by status"
           tabs={tabs}
           value={tab}
-          onChange={setTab}
+          onChange={changeTab}
         />
       </div>
 
@@ -127,14 +134,14 @@ export default function AdminReturnsPage() {
       {returns.isPending && (
         <p className="text-muted text-sm">Loading return requests…</p>
       )}
-      {returns.data?.length === 0 && (
+      {returns.data?.requests.length === 0 && (
         <p className="border-ink text-muted border p-6 text-sm">
           No {tab.toLowerCase()} return requests.
         </p>
       )}
 
       <div className="flex flex-col gap-4">
-        {returns.data?.map((request) => (
+        {returns.data?.requests.map((request) => (
           <article key={request.id} className="border-ink border">
             <header className="border-ink bg-placeholder flex flex-wrap items-start justify-between gap-4 border-b p-4">
               <div className="flex flex-col gap-1">
@@ -161,7 +168,13 @@ export default function AdminReturnsPage() {
               <div className="text-right">
                 <p className="text-muted text-xs">Estimated refund</p>
                 <p className="font-mono text-xl font-semibold">
-                  {formatPrice(request.estimatedRefundCents)}
+                  {formatPrice(
+                    request.items.reduce(
+                      (sum, item) =>
+                        sum + item.orderItem.unitPriceCents * item.quantity,
+                      0,
+                    ),
+                  )}
                 </p>
               </div>
             </header>
@@ -211,6 +224,15 @@ export default function AdminReturnsPage() {
           </article>
         ))}
       </div>
+
+      {returns.data && (
+        <Pager
+          page={page}
+          pageSize={returns.data.pageSize}
+          total={returns.data.total}
+          onPageChange={setPage}
+        />
+      )}
     </div>
   );
 }

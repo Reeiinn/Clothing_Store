@@ -7,7 +7,7 @@ import { cx } from "~/lib/cx";
 import { api, type RouterOutputs } from "~/trpc/react";
 import { errorMessage } from "../_components/error-message";
 
-type Grid = NonNullable<RouterOutputs["inventory"]["variantGrid"]>;
+type Grid = RouterOutputs["inventory"]["variantMatrix"];
 
 const cellStyles = {
   SOLD_OUT: "bg-ink text-paper",
@@ -25,7 +25,7 @@ export function VariantGrid({
   grid,
   loading,
 }: {
-  grid: Grid | null | undefined;
+  grid: Grid | undefined;
   loading: boolean;
 }) {
   const utils = api.useUtils();
@@ -43,25 +43,25 @@ export function VariantGrid({
     onError: (e) => setError(errorMessage(e)),
   });
 
-  if (loading && grid === undefined) {
+  if (loading) {
     return <p className="text-muted text-sm">Loading stock grid…</p>;
   }
   if (!grid) {
-    return <p className="border-ink border p-6 text-sm">No products yet.</p>;
+    return (
+      <p className="border-ink border p-6 text-sm">
+        Pick a product in the alerts table to see its stock.
+      </p>
+    );
   }
 
   // Look the edited cell up in the current grid, so switching product closes the form.
-  let editing: { label: string; stock: number } | null = null;
-  for (const row of grid.rows) {
-    for (const cell of row.cells) {
-      if (cell.variantId && cell.variantId === editingId) {
-        editing = {
-          label: `${row.colorName} / ${cell.size}`,
-          stock: cell.stock,
-        };
-      }
-    }
-  }
+  const editingCell = editingId
+    ? grid.cells.find((cell) => cell.variantId === editingId)
+    : undefined;
+  const editing = editingCell && {
+    label: `${editingCell.color} / ${editingCell.size}`,
+    stock: editingCell.stock,
+  };
 
   function startEditing(variantId: string, stock: number) {
     setEditingId(variantId);
@@ -114,37 +114,43 @@ export function VariantGrid({
             </tr>
           </thead>
           <tbody>
-            {grid.rows.map((row) => (
-              <tr key={row.colorName}>
+            {grid.colors.map((color) => (
+              <tr key={color.name}>
                 <th className="px-2 py-1 text-left text-sm font-medium whitespace-nowrap">
-                  {row.colorName}
+                  {color.name}
                 </th>
-                {row.cells.map((cell) => (
-                  <td key={cell.size} className="p-0">
-                    {cell.variantId ? (
-                      <button
-                        type="button"
-                        onClick={() => startEditing(cell.variantId, cell.stock)}
-                        aria-label={`${row.colorName} ${cell.size}: ${cell.stock} in stock. Edit stock.`}
-                        className={cx(
-                          "border-ink flex h-11 w-20 items-center justify-center border font-mono text-sm transition-shadow",
-                          cellStyles[cell.status],
-                          cell.variantId === editingId &&
-                            "ring-ink ring-2 ring-offset-2",
-                        )}
-                      >
-                        {cell.stock}
-                      </button>
-                    ) : (
-                      <span
-                        aria-label={`${row.colorName} ${cell.size}: not sold`}
-                        className="text-muted border-line flex h-11 w-20 items-center justify-center border border-dashed font-mono text-sm"
-                      >
-                        —
-                      </span>
-                    )}
-                  </td>
-                ))}
+                {grid.sizes.map((size) => {
+                  const cell = grid.cells.find(
+                    (c) => c.color === color.name && c.size === size,
+                  );
+                  const variantId = cell?.variantId;
+                  return (
+                    <td key={size} className="p-0">
+                      {cell && variantId ? (
+                        <button
+                          type="button"
+                          onClick={() => startEditing(variantId, cell.stock)}
+                          aria-label={`${color.name} ${size}: ${cell.stock} in stock. Edit stock.`}
+                          className={cx(
+                            "border-ink flex h-11 w-20 items-center justify-center border font-mono text-sm transition-shadow",
+                            cellStyles[cell.status],
+                            variantId === editingId &&
+                              "ring-ink ring-2 ring-offset-2",
+                          )}
+                        >
+                          {cell.stock}
+                        </button>
+                      ) : (
+                        <span
+                          aria-label={`${color.name} ${size}: not sold`}
+                          className="text-muted border-line flex h-11 w-20 items-center justify-center border border-dashed font-mono text-sm"
+                        >
+                          —
+                        </span>
+                      )}
+                    </td>
+                  );
+                })}
               </tr>
             ))}
           </tbody>

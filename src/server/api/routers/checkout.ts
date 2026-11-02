@@ -71,14 +71,14 @@ function confirmSimulatedPayment(payment: z.infer<typeof paymentSchema>) {
 
   if (payment.cardNumber === "4000000000000002") {
     throw new TRPCError({
-      code: "BAD_REQUEST",
+      code: "PAYMENT_REQUIRED",
       message: "Your card was declined",
     });
   }
 
   if (payment.cardNumber !== "4242424242424242") {
     throw new TRPCError({
-      code: "BAD_REQUEST",
+      code: "PAYMENT_REQUIRED",
       message: "Use a test card number",
     });
   }

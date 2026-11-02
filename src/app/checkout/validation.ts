@@ -90,53 +90,6 @@ export function firstInvalidField(errors: FieldErrors) {
   return FIELD_ORDER.find((name) => errors[name]);
 }
 
-/**
- * The server reports bad input as a JSON list of issues, each with a path like
- * ["address", "street"]. Returns the messages keyed by input, or null when the
- * text isn't a validation error.
- */
-export function parseServerErrors(message: string): FieldErrors | null {
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(message);
-  } catch {
-    return null;
-  }
-  if (!Array.isArray(parsed)) return null;
-
-  const errors: FieldErrors = {};
-  for (const issue of parsed as unknown[]) {
-    if (typeof issue !== "object" || issue === null) continue;
-    const { path, message: text } = issue as {
-      path?: unknown;
-      message?: unknown;
-    };
-    if (!Array.isArray(path) || typeof text !== "string") continue;
-
-    const group: unknown = path[0];
-    const field: unknown = path[path.length - 1];
-    if (
-      (group === "address" || group === "payment") &&
-      typeof field === "string" &&
-      (FIELD_ORDER as readonly string[]).includes(field)
-    ) {
-      errors[field as FieldName] ??= text;
-    }
-  }
-  return Object.keys(errors).length > 0 ? errors : null;
-}
-
-/** "Only 1 left in Black / XL" becomes "Black / XL only has 1 left". */
-export function stockConflictText(message: string) {
-  const match = /^Only (\d+) left in (.+)$/.exec(message);
-  const left = match?.[1];
-  const label = match?.[2];
-  if (!left || !label) return message;
-  return left === "0"
-    ? `${label} is sold out`
-    : `${label} only has ${left} left`;
-}
-
 export function formatCardNumber(raw: string) {
   return raw
     .replace(/\D/g, "")

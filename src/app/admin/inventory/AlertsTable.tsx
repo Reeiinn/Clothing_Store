@@ -8,7 +8,7 @@ import { cx } from "~/lib/cx";
 import { api, type RouterOutputs } from "~/trpc/react";
 import { errorMessage } from "../_components/error-message";
 
-export type AlertItem = RouterOutputs["inventory"]["alerts"]["items"][number];
+export type AlertItem = RouterOutputs["inventory"]["alerts"]["rows"][number];
 
 const th = "px-4 py-3 text-left font-mono text-xs font-medium tracking-wide";
 const td = "px-4 py-2.5 text-sm";
@@ -46,7 +46,7 @@ function RowActions({ item }: { item: AlertItem }) {
       return;
     }
     setError(null);
-    restock.mutate({ variantId: item.variantId, quantity: amount });
+    restock.mutate({ variantId: item.variantId, addQuantity: amount });
   }
 
   return (
@@ -61,7 +61,7 @@ function RowActions({ item }: { item: AlertItem }) {
             min={1}
             inputMode="numeric"
             placeholder="Add quantity"
-            aria-label={`Quantity to add for ${item.productName}, ${item.colorName}, ${item.size}`}
+            aria-label={`Quantity to add for ${item.productName}, ${item.color}, ${item.size}`}
             value={quantity}
             onChange={(e) => setQuantity(e.target.value)}
             className="border-ink bg-paper h-8 w-28 border px-2 font-mono text-xs"
@@ -140,7 +140,7 @@ export function AlertsTable({
     return (
       <p className="border-ink border p-6 text-sm">
         {filter === "ALL"
-          ? "No low-stock variants 🎉"
+          ? "No low-stock or sold-out variants."
           : filter === "SOLD_OUT"
             ? "No sold-out variants."
             : "No low-stock variants."}
@@ -150,7 +150,6 @@ export function AlertsTable({
 
   return (
     <div className="flex flex-col gap-3">
-      {/* The box scrolls sideways on narrow screens, not the whole page. */}
       <div className="border-ink overflow-x-auto border">
         <table className="w-full min-w-[56rem] border-collapse">
           <thead className="bg-placeholder border-ink border-b">
@@ -190,23 +189,12 @@ export function AlertsTable({
                     {item.productName}
                   </button>
                 </td>
-                <td className={td}>{item.categoryName}</td>
-                <td className={td}>
-                  <span className="flex items-center gap-2">
-                    <span
-                      aria-hidden
-                      style={{ backgroundColor: item.colorHex }}
-                      className="border-line size-3 shrink-0 rounded-full border"
-                    />
-                    {item.colorName}
-                  </span>
-                </td>
+                <td className={td}>{item.category}</td>
+                <td className={td}>{item.color}</td>
                 <td className={`${td} font-mono`}>{item.size}</td>
                 <td className={`${td} text-right font-mono`}>{item.stock}</td>
                 <td className={td}>
-                  <StatusBadge
-                    status={item.status === "OK" ? "OK" : item.status}
-                  />
+                  <StatusBadge status={item.status} />
                 </td>
                 <td className={td}>
                   <RowActions item={item} />

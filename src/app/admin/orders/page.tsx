@@ -6,10 +6,12 @@ import { useState } from "react";
 import { StatusBadge } from "~/components/StatusBadge";
 import { formatPrice } from "~/lib/format";
 import { api, type RouterOutputs } from "~/trpc/react";
+import { Pager } from "../_components/Pager";
 import { StatusTabs } from "../_components/StatusTabs";
 import { OrderActions } from "./OrderActions";
 
-type OrderStatus = RouterOutputs["order"]["adminList"][number]["status"];
+type OrderStatus =
+  RouterOutputs["order"]["adminList"]["orders"][number]["status"];
 type Tab = "ALL" | OrderStatus;
 
 const tabs: { value: Tab; label: string }[] = [
@@ -25,9 +27,16 @@ const td = "px-4 py-3 align-top text-sm";
 
 export default function AdminOrdersPage() {
   const [tab, setTab] = useState<Tab>("ALL");
+  const [page, setPage] = useState(1);
   const orders = api.order.adminList.useQuery({
     status: tab === "ALL" ? undefined : tab,
+    page,
   });
+
+  function changeTab(next: Tab) {
+    setTab(next);
+    setPage(1);
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -42,7 +51,7 @@ export default function AdminOrdersPage() {
           label="Filter orders by status"
           tabs={tabs}
           value={tab}
-          onChange={setTab}
+          onChange={changeTab}
         />
       </div>
 
@@ -73,16 +82,16 @@ export default function AdminOrdersPage() {
                 </td>
               </tr>
             )}
-            {orders.data?.length === 0 && (
+            {orders.data?.orders.length === 0 && (
               <tr>
                 <td colSpan={7} className={`${td} text-muted`}>
                   No orders here yet.
                 </td>
               </tr>
             )}
-            {orders.data?.map((order) => (
+            {orders.data?.orders.map((order) => (
               <tr
-                key={order.id}
+                key={order.number}
                 className="border-line border-b last:border-b-0"
               >
                 <td className={td}>
@@ -115,7 +124,6 @@ export default function AdminOrdersPage() {
                 </td>
                 <td className={td}>
                   <OrderActions
-                    orderId={order.id}
                     orderNumber={order.number}
                     status={order.status}
                   />
@@ -125,6 +133,15 @@ export default function AdminOrdersPage() {
           </tbody>
         </table>
       </div>
+
+      {orders.data && (
+        <Pager
+          page={page}
+          pageSize={orders.data.pageSize}
+          total={orders.data.total}
+          onPageChange={setPage}
+        />
+      )}
     </div>
   );
 }

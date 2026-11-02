@@ -27,10 +27,14 @@ export default async function AdminLayout({
             <Link href="/admin/inventory" className="hover:underline">
               Inventory
             </Link>
+            <Link href="/admin/orders" className="hover:underline">
+              Orders
+            </Link>
+            <Link href="/admin/returns" className="hover:underline">
+              Return requests
+            </Link>
           </nav>
           <Link href="/products" className="ml-auto text-sm hover:underline">
-          <Link href="/admin/orders" className="hover:underline">Orders</Link>
-<Link href="/admin/returns" className="hover:underline">Return requests</Link>
             View store
           </Link>
         </div>

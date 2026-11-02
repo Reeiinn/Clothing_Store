@@ -5,8 +5,8 @@ type Stats = RouterOutputs["inventory"]["stats"];
 
 export function StatCards({ stats }: { stats: Stats | undefined }) {
   const cards = [
-    { label: "Low-stock variants", value: stats?.lowStock, dark: false },
-    { label: "Sold-out variants", value: stats?.soldOut, dark: true },
+    { label: "Low-stock variants", value: stats?.lowStockCount, dark: false },
+    { label: "Sold-out variants", value: stats?.soldOutCount, dark: true },
     { label: "Orders to ship", value: stats?.ordersToShip, dark: false },
     { label: "Open return requests", value: stats?.openReturns, dark: false },
   ];
