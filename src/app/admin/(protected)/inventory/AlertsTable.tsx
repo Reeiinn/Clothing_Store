@@ -1,10 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 
 import { Button } from "~/components/Button";
 import { StatusBadge } from "~/components/StatusBadge";
-import { cx } from "~/lib/cx";
 import { api, type RouterOutputs } from "~/trpc/react";
 import { errorMessage } from "../_components/error-message";
 import { Pager } from "../_components/Pager";
@@ -20,14 +20,6 @@ function RowActions({ item }: { item: AlertItem }) {
   const [quantity, setQuantity] = useState("");
   const [error, setError] = useState<string | null>(null);
 
-  const requestRestock = api.inventory.requestRestock.useMutation({
-    onSuccess: async () => {
-      setError(null);
-      await utils.inventory.alerts.invalidate();
-    },
-    onError: (e) => setError(errorMessage(e)),
-  });
-
   const restock = api.inventory.restock.useMutation({
     onSuccess: async () => {
       setAdding(false);
@@ -42,7 +34,7 @@ function RowActions({ item }: { item: AlertItem }) {
     event.preventDefault();
     const amount = Number(quantity);
     if (quantity.trim() === "" || !Number.isInteger(amount) || amount < 1) {
-      setError("Enter a whole number of 1 or more.");
+      setError("Enter how many arrived (1 or more).");
       return;
     }
     setError(null);
@@ -60,8 +52,8 @@ function RowActions({ item }: { item: AlertItem }) {
             type="number"
             min={1}
             inputMode="numeric"
-            placeholder="Add quantity"
-            aria-label={`Quantity to add for ${item.productName}, ${item.color}, ${item.size}`}
+            placeholder="How many?"
+            aria-label={`How many ${item.productName}, ${item.color}, ${item.size} arrived`}
             value={quantity}
             onChange={(e) => setQuantity(e.target.value)}
             className="border-ink bg-paper h-8 w-28 border px-2 font-mono text-xs"
@@ -82,25 +74,9 @@ function RowActions({ item }: { item: AlertItem }) {
           </Button>
         </form>
       ) : (
-        <div className="flex flex-wrap items-center justify-end gap-2">
-          {item.restockRequested ? (
-            <span className="text-muted text-xs">Restock requested</span>
-          ) : (
-            <Button
-              size="sm"
-              variant="secondary"
-              loading={requestRestock.isPending}
-              onClick={() =>
-                requestRestock.mutate({ variantId: item.variantId })
-              }
-            >
-              Request restock
-            </Button>
-          )}
-          <Button size="sm" onClick={() => setAdding(true)}>
-            Restock
-          </Button>
-        </div>
+        <Button size="sm" onClick={() => setAdding(true)}>
+          Add stock
+        </Button>
       )}
       {error && (
         <p role="alert" className="text-danger max-w-64 text-right text-xs">
@@ -118,8 +94,6 @@ export function AlertsTable({
   pageSize,
   filter,
   loading,
-  activeProductId,
-  onSelectProduct,
   onPageChange,
 }: {
   items: AlertItem[];
@@ -128,18 +102,16 @@ export function AlertsTable({
   pageSize: number;
   filter: "ALL" | "SOLD_OUT" | "LOW";
   loading: boolean;
-  activeProductId: string | undefined;
-  onSelectProduct: (productId: string) => void;
   onPageChange: (page: number) => void;
 }) {
   if (!loading && total === 0) {
     return (
       <p className="border-ink border p-6 text-sm">
         {filter === "ALL"
-          ? "No low-stock variants 🎉"
+          ? "Everything is well stocked. Nothing to do here."
           : filter === "SOLD_OUT"
-            ? "No sold-out variants."
-            : "No low-stock variants."}
+            ? "Nothing is sold out."
+            : "Nothing is running low."}
       </p>
     );
   }
@@ -147,45 +119,39 @@ export function AlertsTable({
   return (
     <div className="flex flex-col gap-3">
       <div className="border-ink overflow-x-auto border">
-        <table className="w-full min-w-[56rem] border-collapse">
+        <table className="w-full min-w-[44rem] border-collapse">
           <thead className="bg-placeholder border-ink border-b">
             <tr>
               <th className={th}>PRODUCT</th>
-              <th className={th}>CATEGORY</th>
               <th className={th}>COLOR</th>
               <th className={th}>SIZE</th>
-              <th className={`${th} text-right`}>IN STOCK</th>
+              <th className={`${th} text-right`}>LEFT</th>
               <th className={th}>STATUS</th>
-              <th className={`${th} text-right`}>ACTION</th>
+              <th className={th}></th>
             </tr>
           </thead>
           <tbody>
             {loading && items.length === 0 && (
               <tr>
-                <td colSpan={7} className={`${td} text-muted`}>
-                  Loading alerts…
+                <td colSpan={6} className={`${td} text-muted`}>
+                  Loading…
                 </td>
               </tr>
             )}
             {items.map((item) => (
               <tr
                 key={item.variantId}
-                className={cx(
-                  "border-line border-b last:border-b-0",
-                  item.productId === activeProductId && "bg-ink/5",
-                )}
+                className="border-line border-b last:border-b-0"
               >
                 <td className={td}>
-                  <button
-                    type="button"
-                    onClick={() => onSelectProduct(item.productId)}
-                    title="Show this product in the grid below"
-                    className="text-left font-medium underline-offset-2 hover:underline"
+                  <Link
+                    href={`/products/${item.productId}`}
+                    title="See every size and color of this product"
+                    className="font-medium underline underline-offset-2"
                   >
                     {item.productName}
-                  </button>
+                  </Link>
                 </td>
-                <td className={td}>{item.category}</td>
                 <td className={td}>
                   <span className="flex items-center gap-2">
                     <span
@@ -198,7 +164,7 @@ export function AlertsTable({
                 </td>
                 <td className={`${td} font-mono`}>{item.size}</td>
                 <td className={`${td} text-right font-mono`}>{item.stock}</td>
-                <td className={td}>
+                <td className={`${td} whitespace-nowrap`}>
                   <StatusBadge status={item.status} />
                 </td>
                 <td className={td}>

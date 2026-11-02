@@ -37,12 +37,10 @@ export function ThresholdControl({ current }: { current: number }) {
   return (
     <form
       onSubmit={submit}
-      className="flex flex-col items-start gap-1.5 sm:items-end"
+      className="border-line flex flex-col items-start gap-1.5 border-t pt-6"
     >
-      <div className="flex flex-wrap items-center gap-3">
-        <label htmlFor="stock-threshold" className="text-sm">
-          Alert when stock is at or below
-        </label>
+      <div className="flex flex-wrap items-center gap-3 text-sm">
+        <label htmlFor="stock-threshold">Mark as running low when</label>
         <input
           id="stock-threshold"
           type="number"
@@ -53,6 +51,7 @@ export function ThresholdControl({ current }: { current: number }) {
           onChange={(e) => setValue(e.target.value)}
           className="border-ink bg-paper h-11 w-20 border px-3 font-mono text-sm"
         />
+        <span>or fewer are left</span>
         <Button type="submit" variant="secondary" loading={save.isPending}>
           Save
         </Button>

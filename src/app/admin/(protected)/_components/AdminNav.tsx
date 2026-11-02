@@ -5,10 +5,10 @@ import { usePathname } from "next/navigation";
 
 import { cx } from "~/lib/cx";
 
-const links: { label: string; href?: string }[] = [
-  { label: "Dashboard" },
+const links = [
+  { label: "Dashboard", href: "/dashboard" },
   { label: "Inventory", href: "/inventory" },
-  { label: "Products" },
+  { label: "Products", href: "/products" },
   { label: "Orders", href: "/orders" },
   { label: "Return requests", href: "/returns" },
 ];
@@ -24,19 +24,6 @@ export function AdminNav({ storeUrl }: { storeUrl: string }) {
       className="flex gap-1 overflow-x-auto md:flex-col md:overflow-visible"
     >
       {links.map((link) => {
-        if (!link.href) {
-          return (
-            <span
-              key={link.label}
-              aria-disabled
-              title="Coming soon"
-              className={cx(item, "text-muted gap-2")}
-            >
-              {link.label}
-              <span className="font-mono text-[10px] tracking-wide">SOON</span>
-            </span>
-          );
-        }
         const active = pathname.startsWith(link.href);
         return (
           <Link
