@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 import { Size } from "../../../../generated/prisma";
+import { stockStatus } from "~/lib/stock";
 import { adminProcedure, createTRPCRouter } from "~/server/api/trpc";
 import { getLowStockThreshold } from "~/server/settings";
 
@@ -12,12 +13,6 @@ const alertPaginationSchema = z.object({
   page: z.number().int().min(1).default(1),
   pageSize: z.number().int().min(1).max(100).default(20),
 });
-
-function getStockStatus(stock: number, threshold: number) {
-  if (stock === 0) return "SOLD_OUT" as const;
-  if (stock <= threshold) return "LOW" as const;
-  return "OK" as const;
-}
 
 export const inventoryRouter = createTRPCRouter({
   stats: adminProcedure.query(async ({ ctx }) => {
@@ -105,7 +100,7 @@ export const inventoryRouter = createTRPCRouter({
           color: variant.color.name,
           size: variant.size,
           stock: variant.stock,
-          status: getStockStatus(variant.stock, threshold),
+          status: stockStatus(variant.stock, threshold),
           restockRequested: variant.restockRequestedAt !== null,
         })),
         total,
@@ -234,7 +229,7 @@ export const inventoryRouter = createTRPCRouter({
             size,
             variantId: variant?.id ?? null,
             stock,
-            status: getStockStatus(stock, threshold),
+            status: stockStatus(stock, threshold),
           };
         }),
       );

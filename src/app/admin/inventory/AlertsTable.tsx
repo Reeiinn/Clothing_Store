@@ -7,6 +7,7 @@ import { StatusBadge } from "~/components/StatusBadge";
 import { cx } from "~/lib/cx";
 import { api, type RouterOutputs } from "~/trpc/react";
 import { errorMessage } from "../_components/error-message";
+import { Pager } from "../_components/Pager";
 
 export type AlertItem = RouterOutputs["inventory"]["alerts"]["rows"][number];
 
@@ -132,10 +133,6 @@ export function AlertsTable({
   onSelectProduct: (productId: string) => void;
   onPageChange: (page: number) => void;
 }) {
-  const lastPage = Math.max(1, Math.ceil(total / pageSize));
-  const firstRow = total === 0 ? 0 : (page - 1) * pageSize + 1;
-  const lastRow = Math.min(page * pageSize, total);
-
   if (!loading && total === 0) {
     return (
       <p className="border-ink border p-6 text-sm">
@@ -205,31 +202,12 @@ export function AlertsTable({
         </table>
       </div>
 
-      {total > pageSize && (
-        <div className="flex items-center justify-between gap-3 text-sm">
-          <p className="text-muted">
-            Showing {firstRow}–{lastRow} of {total}
-          </p>
-          <div className="flex gap-2">
-            <Button
-              size="sm"
-              variant="secondary"
-              disabled={page <= 1}
-              onClick={() => onPageChange(page - 1)}
-            >
-              Previous
-            </Button>
-            <Button
-              size="sm"
-              variant="secondary"
-              disabled={page >= lastPage}
-              onClick={() => onPageChange(page + 1)}
-            >
-              Next
-            </Button>
-          </div>
-        </div>
-      )}
+      <Pager
+        page={page}
+        pageSize={pageSize}
+        total={total}
+        onPageChange={onPageChange}
+      />
     </div>
   );
 }

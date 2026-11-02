@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 import type { PrismaClient } from "../../../../generated/prisma";
+import { lineWarning } from "~/lib/stock";
 import {
   createTRPCRouter,
   protectedProcedure,
@@ -67,15 +68,12 @@ export const bagRouter = createTRPCRouter({
 
     const lines = rows.map(({ variant, ...row }) => {
       const { stock } = variant;
-      const label = `${variant.color.name} / ${variant.size}`;
-      const warning =
-        stock === 0
-          ? "Sold out"
-          : row.quantity > stock
-            ? `Only ${stock} available, please lower the quantity`
-            : stock <= threshold
-              ? `Only ${stock} left in ${label}`
-              : null;
+      const warning = lineWarning(
+        stock,
+        row.quantity,
+        threshold,
+        `${variant.color.name} / ${variant.size}`,
+      );
       return {
         id: row.id,
         variantId: row.variantId,

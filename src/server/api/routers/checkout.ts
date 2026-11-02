@@ -1,6 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
+import { lineWarning } from "~/lib/stock";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { deliveryOptions } from "~/server/shipping";
 import { getLowStockThreshold } from "~/server/settings";
@@ -122,15 +123,12 @@ export const checkoutRouter = createTRPCRouter({
     ]);
 
     const items = rows.map(({ variant, ...row }) => {
-      const label = `${variant.color.name} / ${variant.size}`;
-      const warning =
-        variant.stock === 0
-          ? "Sold out"
-          : row.quantity > variant.stock
-            ? `Only ${variant.stock} available, please lower the quantity`
-            : variant.stock <= threshold
-              ? `Only ${variant.stock} left in ${label}`
-              : null;
+      const warning = lineWarning(
+        variant.stock,
+        row.quantity,
+        threshold,
+        `${variant.color.name} / ${variant.size}`,
+      );
 
       return {
         id: row.id,

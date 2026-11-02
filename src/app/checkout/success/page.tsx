@@ -5,8 +5,6 @@ import { buttonStyles } from "~/components/Button";
 import { auth } from "~/server/auth";
 import { db } from "~/server/db";
 
-import { BagRefresher } from "./BagRefresher";
-
 export default async function CheckoutSuccessPage({
   searchParams,
 }: {
@@ -33,8 +31,6 @@ export default async function CheckoutSuccessPage({
 
   return (
     <div className="mx-auto flex max-w-xl flex-col items-start gap-6 py-10">
-      <BagRefresher />
-
       <p className="border-ok text-ok flex size-12 items-center justify-center rounded-full border-2 text-2xl">
         ✓
       </p>

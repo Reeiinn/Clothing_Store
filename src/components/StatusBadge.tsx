@@ -1,8 +1,7 @@
 import type { OrderStatus, ReturnStatus } from "../../generated/prisma";
 
 import { cx } from "~/lib/cx";
-
-export type StockStatus = "OK" | "LOW" | "SOLD_OUT";
+import type { StockStatus } from "~/lib/stock";
 
 const styles: Record<OrderStatus | ReturnStatus | StockStatus, string> = {
   PROCESSING: "bg-warn-bg text-warn",
