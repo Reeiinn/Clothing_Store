@@ -7,6 +7,7 @@ import { AuthLinks } from "~/components/AuthLinks";
 import { BagLink } from "~/components/BagLink";
 import { MobileMenu } from "~/components/MobileMenu";
 import { SignOutButton } from "~/components/SignOutButton";
+import { cx } from "~/lib/cx";
 import { adminHost, requestHost } from "~/lib/hosts";
 import { auth } from "~/server/auth";
 import { api } from "~/trpc/server";
@@ -19,13 +20,29 @@ const shopLinks = [
 
 function SearchBox({ className }: { className?: string }) {
   return (
-    <Form action="/products" role="search" className={className}>
+    <Form
+      action="/products"
+      role="search"
+      className={cx("relative", className)}
+    >
+      <svg
+        aria-hidden
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        className="text-muted pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2"
+      >
+        <circle cx="11" cy="11" r="6.5" />
+        <path d="m20 20-4.2-4.2" />
+      </svg>
       <input
         type="search"
         name="q"
         placeholder="Search clothing"
         aria-label="Search clothing"
-        className="border-line placeholder:text-muted focus:border-ink h-9 w-full border bg-transparent px-3 text-sm outline-none"
+        className="border-line placeholder:text-muted focus:border-ink h-10 w-full rounded-full border bg-white pr-4 pl-9 text-sm transition-colors outline-none"
       />
     </Form>
   );
@@ -49,7 +66,7 @@ async function AccountLinks({ className }: { className?: string }) {
       {session.user.role === "ADMIN" && (
         <a
           href={`//${adminHost(requestHost(await headers()))}/dashboard`}
-          className="hover:underline"
+          className="text-ink/75 hover:text-ink"
         >
           Admin
         </a>
@@ -65,7 +82,11 @@ export async function StoreHeader() {
   const shopNav = (className: string) => (
     <nav aria-label="Shop" className={className}>
       {shopLinks.map((link) => (
-        <Link key={link.label} href={link.href} className="hover:underline">
+        <Link
+          key={link.label}
+          href={link.href}
+          className="text-ink/75 hover:text-ink"
+        >
           {link.label}
         </Link>
       ))}
@@ -73,11 +94,11 @@ export async function StoreHeader() {
   );
 
   return (
-    <header className="border-line relative border-b">
+    <header className="border-line bg-paper/85 sticky top-0 z-20 border-b backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-6 px-4 sm:px-6">
         <Link
           href="/products"
-          className="text-lg font-semibold tracking-[0.2em]"
+          className="text-lg font-semibold tracking-[0.2em] transition-opacity hover:opacity-70"
         >
           STYLEGRID
         </Link>
@@ -87,7 +108,10 @@ export async function StoreHeader() {
         <SearchBox className="ml-auto hidden w-56 lg:block xl:w-72" />
 
         <div className="ml-auto flex items-center gap-5 text-sm whitespace-nowrap lg:ml-0">
-          <Link href="/orders" className="hidden hover:underline lg:inline">
+          <Link
+            href="/orders"
+            className="text-ink/75 hover:text-ink hidden lg:inline"
+          >
             Orders
           </Link>
           <BagLink initialCount={bagCount} />

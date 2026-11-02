@@ -84,7 +84,7 @@ function RadioCard({
   return (
     <label
       className={cx(
-        "flex cursor-pointer items-center gap-3 border-2 p-4",
+        "rounded-ui flex cursor-pointer items-center gap-3 border-2 bg-white p-4 transition-colors",
         checked ? "border-ink" : "border-line hover:border-muted",
       )}
     >
@@ -271,7 +271,7 @@ export function CheckoutForm({ summary }: { summary: Summary }) {
                   id="saved-address"
                   value={savedId}
                   onChange={(event) => pickAddress(event.target.value)}
-                  className="border-ink h-12 w-full border bg-white px-3 text-sm"
+                  className="border-line rounded-ui focus:border-ink h-12 w-full border bg-white px-3 text-sm transition-colors outline-none"
                 >
                   {summary.addresses.map((address) => (
                     <option key={address.id} value={address.id}>

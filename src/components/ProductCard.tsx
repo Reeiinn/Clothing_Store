@@ -32,17 +32,17 @@ export function ProductCard({
           src={imageUrl}
           alt=""
           sizes="(min-width: 1024px) 25vw, 50vw"
-          className="aspect-[3/4] w-full"
+          className="rounded-ui aspect-[3/4] w-full"
         />
         {tag && (
-          <span className="bg-paper border-line absolute top-2 left-2 border px-1.5 py-0.5 font-mono text-[11px] tracking-wide">
+          <span className="bg-ink text-paper absolute top-2.5 left-2.5 rounded-full px-2.5 py-1 font-mono text-[10px] tracking-wide">
             {tag}
           </span>
         )}
       </div>
       <div className="mt-3 flex items-start justify-between gap-3 text-sm">
-        <h3 className="group-hover:underline">{name}</h3>
-        <span className="shrink-0">{formatPrice(priceCents)}</span>
+        <h3 className="underline-offset-4 group-hover:underline">{name}</h3>
+        <span className="shrink-0 font-medium">{formatPrice(priceCents)}</span>
       </div>
       <div className="text-muted mt-2 flex items-center justify-between gap-3 text-xs">
         <span className="flex items-center gap-1.5">

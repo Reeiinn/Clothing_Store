@@ -13,7 +13,8 @@ const links = [
   { label: "Return requests", href: "/returns" },
 ];
 
-const item = "flex min-h-11 items-center px-3 text-sm whitespace-nowrap";
+const item =
+  "rounded-ui flex min-h-11 items-center px-3 text-sm whitespace-nowrap";
 
 export function AdminNav({ storeUrl }: { storeUrl: string }) {
   const pathname = usePathname();
@@ -32,7 +33,7 @@ export function AdminNav({ storeUrl }: { storeUrl: string }) {
             aria-current={active ? "page" : undefined}
             className={cx(
               item,
-              active ? "bg-ink text-paper font-semibold" : "hover:bg-ink/5",
+              active ? "bg-ink text-paper font-medium" : "hover:bg-ink/5",
             )}
           >
             {link.label}

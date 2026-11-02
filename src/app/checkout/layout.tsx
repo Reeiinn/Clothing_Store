@@ -5,7 +5,7 @@ export default function CheckoutLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <div className="min-h-screen">
-      <header className="border-ink border-b">
+      <header className="border-line border-b bg-white">
         <div className="mx-auto grid h-16 max-w-6xl grid-cols-[1fr_auto_1fr] items-center px-4 sm:px-6">
           <Link
             href="/products"

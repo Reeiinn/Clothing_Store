@@ -58,7 +58,7 @@ export function OrdersView() {
     return (
       <div className="flex flex-col gap-7">
         {heading}
-        <div className="border-ink flex flex-col items-start gap-4 border-t py-8">
+        <div className="border-line flex flex-col items-start gap-4 border-t py-8">
           <p className="text-lg font-medium">
             You haven&apos;t placed any orders
           </p>
@@ -92,7 +92,7 @@ export function OrdersView() {
       <OrderTracking orderNumber={featured.orderNumber} />
 
       <section className="flex flex-col gap-4">
-        <div className="border-ink flex flex-wrap items-end justify-between gap-4 border-b pb-4">
+        <div className="border-line flex flex-wrap items-end justify-between gap-4 border-b pb-4">
           <h2 className="text-2xl font-semibold">Order history</h2>
           <div
             role="group"
@@ -106,10 +106,10 @@ export function OrdersView() {
                 aria-pressed={value === tab}
                 onClick={() => setTab(value)}
                 className={cx(
-                  "border-ink min-h-10 border px-3.5 font-mono text-xs tracking-wide transition-colors",
+                  "min-h-10 rounded-full border px-4 font-mono text-xs tracking-wide transition-colors",
                   value === tab
-                    ? "bg-ink text-paper"
-                    : "bg-paper text-ink hover:bg-ink/5",
+                    ? "border-ink bg-ink text-paper"
+                    : "border-line text-ink hover:border-ink bg-white",
                 )}
               >
                 {value}

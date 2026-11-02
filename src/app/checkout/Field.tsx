@@ -27,7 +27,7 @@ export function Field({
 
   return (
     <div className={className}>
-      <label htmlFor={id} className="mb-1.5 block text-sm">
+      <label htmlFor={id} className="mb-1.5 block text-sm font-medium">
         {label}
       </label>
       <input
@@ -37,8 +37,8 @@ export function Field({
         aria-describedby={describedBy}
         onChange={(event) => onValue(event.target.value)}
         className={cx(
-          "placeholder:text-muted focus:border-ink h-12 w-full border bg-white px-3 text-sm outline-none disabled:opacity-60",
-          error ? "border-danger" : "border-ink",
+          "placeholder:text-muted focus:border-ink rounded-ui h-12 w-full border bg-white px-3 text-sm transition-colors outline-none disabled:opacity-60",
+          error ? "border-danger" : "border-line",
         )}
         {...props}
       />

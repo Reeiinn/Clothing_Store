@@ -49,7 +49,7 @@ export function ReturnForm({
 
   if (create.isSuccess) {
     return (
-      <div className="border-ink flex flex-col items-start gap-4 border p-6 sm:p-8">
+      <div className="border-line rounded-ui flex flex-col items-start gap-4 border bg-white p-6 sm:p-8">
         <p role="status" className="text-lg font-medium">
           Return request sent. We&apos;ll email you the next steps.
         </p>
@@ -133,7 +133,7 @@ export function ReturnForm({
               <li
                 key={id}
                 className={cx(
-                  "flex flex-col gap-4 border p-4",
+                  "rounded-ui flex flex-col gap-4 border bg-white p-4",
                   selection ? "border-ink" : "border-line",
                   returned && "opacity-60",
                 )}
@@ -188,7 +188,7 @@ export function ReturnForm({
                         onChange={(event) =>
                           update(id, { reason: event.target.value as Reason })
                         }
-                        className="border-ink h-11 w-full border bg-white px-3 text-sm"
+                        className="border-line rounded-ui focus:border-ink h-11 w-full border bg-white px-3 text-sm transition-colors outline-none"
                       >
                         <option value="" disabled>
                           Choose a reason
@@ -234,14 +234,14 @@ export function ReturnForm({
             value={note}
             disabled={create.isPending}
             onChange={(event) => setNote(event.target.value)}
-            className="border-ink w-full border bg-white p-3 text-sm"
+            className="border-line rounded-ui focus:border-ink w-full border bg-white p-3 text-sm transition-colors outline-none"
           />
         </div>
       </div>
 
       <aside
         aria-label="Return summary"
-        className="border-ink flex w-full flex-col gap-4 border p-6 lg:sticky lg:top-6 lg:w-[340px] lg:shrink-0"
+        className="border-line rounded-ui flex w-full flex-col gap-4 border bg-white p-6 lg:sticky lg:top-24 lg:w-[340px] lg:shrink-0"
       >
         <h2 className="text-xl font-semibold">Return summary</h2>
 
@@ -255,7 +255,7 @@ export function ReturnForm({
           <p>Original payment</p>
         </div>
 
-        <div className="border-ink flex items-start justify-between border-t pt-4 text-lg font-semibold">
+        <div className="border-line flex items-start justify-between border-t pt-4 text-lg font-semibold">
           <p>Estimated refund</p>
           <p>{formatPrice(refundCents)}</p>
         </div>

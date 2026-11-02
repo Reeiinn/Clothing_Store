@@ -24,7 +24,10 @@ export function SignupForm({ callbackUrl }: { callbackUrl: string }) {
       <h1 className="text-2xl font-semibold">Create your account</h1>
 
       {state.success ? (
-        <div className="bg-ok-bg text-ok mt-8 p-4 text-sm" role="status">
+        <div
+          className="bg-ok-bg text-ok rounded-ui mt-8 p-4 text-sm"
+          role="status"
+        >
           Your account was created.{" "}
           <Link
             href={loginHref}

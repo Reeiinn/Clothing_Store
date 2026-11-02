@@ -18,7 +18,7 @@ export function OrderSummary({
   return (
     <aside
       aria-label="Order summary"
-      className="border-ink flex w-full flex-col gap-4 border p-6 lg:sticky lg:top-6 lg:w-[340px] lg:shrink-0"
+      className="border-line rounded-ui flex w-full flex-col gap-4 border bg-white p-6 lg:sticky lg:top-24 lg:w-[340px] lg:shrink-0"
     >
       <h2 className="text-xl font-semibold">Order summary</h2>
 
@@ -43,7 +43,7 @@ export function OrderSummary({
             id="promo-code"
             disabled
             placeholder="Coming soon"
-            className="border-line placeholder:text-muted h-11 min-w-0 flex-1 border bg-white px-3 text-sm disabled:cursor-not-allowed disabled:opacity-60"
+            className="border-line placeholder:text-muted rounded-ui h-11 min-w-0 flex-1 border bg-white px-3 text-sm disabled:cursor-not-allowed disabled:opacity-60"
           />
           <Button variant="secondary" disabled>
             Apply
@@ -51,7 +51,7 @@ export function OrderSummary({
         </div>
       </div>
 
-      <div className="border-ink flex items-start justify-between border-t pt-4 text-lg font-semibold">
+      <div className="border-line flex items-start justify-between border-t pt-4 text-lg font-semibold">
         <p>Estimated total</p>
         <p>{formatPrice(subtotalCents)}</p>
       </div>
