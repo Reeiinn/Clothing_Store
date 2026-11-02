@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 import { Size } from "../../../../generated/prisma";
+import { SIZES } from "~/lib/constants";
 import { stockStatus } from "~/lib/stock";
 import { adminProcedure, createTRPCRouter } from "~/server/api/trpc";
 import { getLowStockThreshold } from "~/server/settings";
@@ -204,6 +205,69 @@ export const inventoryRouter = createTRPCRouter({
         colors,
         cells,
       };
+    }),
+
+  createProduct: adminProcedure
+    .input(
+      z.object({
+        name: z.string().trim().min(1, "Enter a product name.").max(100),
+        description: z.string().trim().min(1, "Enter a description."),
+        categorySlug: z.string().min(1, "Pick a category."),
+        gender: z.enum(["MEN", "WOMEN", "UNISEX"]),
+        priceCents: z.number().int().min(1, "Enter a price."),
+        colors: z.array(z.string()).min(1, "Pick at least one color."),
+        sizes: z.array(z.enum(SIZES)).min(1, "Pick at least one size."),
+        stock: z.number().int().min(0),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const slug = input.name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)/g, "");
+
+      const [existing, category, colors] = await Promise.all([
+        ctx.db.product.findUnique({ where: { slug }, select: { id: true } }),
+        ctx.db.category.findUnique({ where: { slug: input.categorySlug } }),
+        ctx.db.color.findMany({ where: { name: { in: input.colors } } }),
+      ]);
+
+      if (existing) {
+        throw new TRPCError({
+          code: "CONFLICT",
+          message: "A product with this name already exists.",
+        });
+      }
+      if (!category || colors.length !== input.colors.length) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Unknown category or color.",
+        });
+      }
+
+      const product = await ctx.db.product.create({
+        data: {
+          name: input.name,
+          slug,
+          description: input.description,
+          gender: input.gender,
+          priceCents: input.priceCents,
+          categoryId: category.id,
+          variants: {
+            create: colors.flatMap((color) =>
+              input.sizes.map((size) => ({
+                sku: `${slug}-${color.slug}-${size}`.toUpperCase(),
+                colorId: color.id,
+                size,
+                stock: input.stock,
+              })),
+            ),
+          },
+        },
+        select: { id: true },
+      });
+
+      return { id: product.id };
     }),
 
   products: adminProcedure.query(async ({ ctx }) => {

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 
+import { buttonStyles } from "~/components/Button";
 import { ProductImage } from "~/components/ProductImage";
 import { formatPrice } from "~/lib/format";
 import { api } from "~/trpc/react";
@@ -14,11 +15,17 @@ export default function AdminProductsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-1.5">
-        <h1 className="text-3xl font-semibold">Products</h1>
-        <p className="text-muted text-sm">
-          Everything in the store. Click a product to see and change its stock.
-        </p>
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div className="flex flex-col gap-1.5">
+          <h1 className="text-3xl font-semibold">Products</h1>
+          <p className="text-muted text-sm">
+            Everything in the store. Click a product to see and change its
+            stock.
+          </p>
+        </div>
+        <Link href="/products/new" className={buttonStyles()}>
+          Add product
+        </Link>
       </div>
 
       {products.isError && (
