@@ -9,7 +9,6 @@ import { getLowStockThreshold } from "~/server/settings";
 
 const genderInput = z.enum(["men", "women"]);
 
-// UNISEX products show up under both Men's and Women's
 function genderWhere(
   gender: z.infer<typeof genderInput> | undefined,
 ): Prisma.ProductWhereInput {
@@ -40,8 +39,7 @@ function buildWhere(input: ListInput): Prisma.ProductWhereInput {
     ? { color: { name: { in: input.colors } } }
     : {};
 
-  // Size and color go in one `some` so they must match the same variant:
-  // Black + M means a Black M exists, not a Black S and a Navy M.
+  // One `some` so size and color must match the same variant
   if (input.sizes?.length || input.colors?.length) {
     and.push({
       variants: {
@@ -53,8 +51,6 @@ function buildWhere(input: ListInput): Prisma.ProductWhereInput {
     });
   }
 
-  // The in-stock variant must also be one of the picked colors, so
-  // "Black + in stock in M" doesn't match a product whose only M in stock is Navy.
   if (input.inStockSize) {
     and.push({
       variants: {
@@ -75,7 +71,6 @@ function sortOrder(
       : sort === "price_desc"
         ? { priceCents: "desc" }
         : { createdAt: "desc" };
-  // id as tie-breaker so paging never repeats or skips a product
   return [primary, { id: "asc" }];
 }
 
@@ -85,8 +80,6 @@ export const productRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const where = buildWhere(input);
 
-      // Variants are selected inside the findMany, so Prisma loads them for
-      // the whole page in one query instead of one per product.
       const [total, products, threshold] = await Promise.all([
         ctx.db.product.count({ where }),
         ctx.db.product.findMany({

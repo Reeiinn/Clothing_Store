@@ -31,14 +31,12 @@ export default function AdminInventoryPage() {
     { filter, page, pageSize: PAGE_SIZE },
     { placeholderData: keepPreviousData },
   );
-  // With no product picked, show the first alert's product
   const productId = selectedProductId ?? alerts.data?.rows[0]?.productId;
   const grid = api.inventory.variantMatrix.useQuery(
     { productId: productId ?? "" },
     { enabled: !!productId },
   );
 
-  // After a restock the last row of a page can disappear; step back a page.
   useEffect(() => {
     if (
       alerts.data &&

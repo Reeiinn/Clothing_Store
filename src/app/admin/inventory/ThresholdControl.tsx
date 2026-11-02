@@ -11,7 +11,6 @@ export function ThresholdControl({ current }: { current: number }) {
   const [value, setValue] = useState(String(current));
   const [error, setError] = useState<string | null>(null);
 
-  // Keep the box in sync with what the server has saved.
   useEffect(() => {
     setValue(String(current));
   }, [current]);
@@ -19,7 +18,6 @@ export function ThresholdControl({ current }: { current: number }) {
   const save = api.inventory.setThreshold.useMutation({
     onSuccess: async () => {
       setError(null);
-      // Refreshes the stat cards, the table and the grid.
       await utils.inventory.invalidate();
     },
     onError: (e) => setError(errorMessage(e)),

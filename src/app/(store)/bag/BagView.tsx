@@ -23,7 +23,6 @@ export function BagView() {
   }
 
   const { items, saved, itemCount, subtotalCents } = bag.data;
-  // Quantity above stock also covers sold-out rows (stock 0, quantity >= 1)
   const hasStockProblem = items.some((line) => line.quantity > line.stock);
 
   return (
@@ -36,7 +35,6 @@ export function BagView() {
         </p>
       </div>
 
-      {/* On phones the summary drops below the list */}
       <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:gap-10">
         <div className="flex min-w-0 flex-1 flex-col gap-8">
           {items.length === 0 ? (

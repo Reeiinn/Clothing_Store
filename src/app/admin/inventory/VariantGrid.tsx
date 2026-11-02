@@ -37,7 +37,6 @@ export function VariantGrid({
     onSuccess: async () => {
       setEditingId(null);
       setError(null);
-      // Stock changed, so the cards and the alerts table may change too.
       await utils.inventory.invalidate();
     },
     onError: (e) => setError(errorMessage(e)),
@@ -54,7 +53,6 @@ export function VariantGrid({
     );
   }
 
-  // Look the edited cell up in the current grid, so switching product closes the form.
   const editingCell = editingId
     ? grid.cells.find((cell) => cell.variantId === editingId)
     : undefined;

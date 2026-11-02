@@ -20,7 +20,6 @@ export default async function ProductPage({
     auth(),
   ]);
 
-  // key resets the picked size/color when moving to another product
   return (
     <ProductView key={product.id} product={product} signedIn={!!session} />
   );

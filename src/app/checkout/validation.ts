@@ -48,7 +48,6 @@ function expiryIsInFuture(expiry: string) {
   );
 }
 
-/** Same rules as the server, so mistakes show up before anything is sent. */
 export function validate(values: FormValues): FieldErrors {
   const errors: FieldErrors = {};
 

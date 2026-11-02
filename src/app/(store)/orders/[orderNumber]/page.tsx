@@ -22,7 +22,6 @@ export default async function OrderPage({
   const orderNumber = Number(param);
   if (!Number.isInteger(orderNumber) || orderNumber < 1) notFound();
 
-  // byNumber only finds the signed-in user's orders, so anyone else's is a 404
   const order = await api.order
     .byNumber({ orderNumber })
     .catch((error: unknown) => {

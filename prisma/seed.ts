@@ -71,13 +71,10 @@ const fitNotes: Record<string, string> = {
   knitwear: "Relaxed fit. Size down for a closer fit.",
 };
 
-// Fixed pattern (not Math.random) so everyone gets the same stock:
-// a mix of sold out, low and normal.
 const STOCK_PATTERN = [
   12, 8, 0, 15, 6, 9, 3, 11, 7, 14, 2, 10, 5, 13, 1, 8, 9, 6,
 ];
 
-// Spec example: Red / M in stock, Red / L sold out.
 const STOCK_OVERRIDES: Record<string, number> = {
   "P001-RED-M": 6,
   "P001-RED-L": 0,
@@ -110,7 +107,6 @@ const STATUS_PATH: Record<OrderStatus, [OrderStatus, string][]> = {
   ],
 };
 
-// One order per status. items are [sku, quantity].
 const sampleOrders: {
   status: OrderStatus;
   daysAgo: number;
@@ -179,7 +175,6 @@ async function main() {
     );
   }
 
-  // Children before parents because of foreign keys
   await db.returnItem.deleteMany();
   await db.returnRequest.deleteMany();
   await db.orderStatusHistory.deleteMany();

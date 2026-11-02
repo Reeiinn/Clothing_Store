@@ -8,7 +8,6 @@ import { BagView } from "./BagView";
 export default async function BagPage() {
   const session = await auth();
 
-  // bag.get needs a signed-in user, so don't call it for guests
   if (!session) {
     return (
       <div className="flex flex-col items-start gap-6">

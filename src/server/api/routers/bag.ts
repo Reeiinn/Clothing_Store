@@ -19,7 +19,6 @@ function soldOut() {
   });
 }
 
-// Matching on userId too, so another user's item just looks missing
 async function findOwnItem(db: PrismaClient, userId: string, itemId: string) {
   const item = await db.bagItem.findFirst({
     where: { id: itemId, userId },
@@ -100,7 +99,6 @@ export const bagRouter = createTRPCRouter({
     };
   }),
 
-  // Public so the header can call it when signed out
   count: publicProcedure.query(async ({ ctx }) => {
     if (!ctx.session?.user) return 0;
     const { _sum } = await ctx.db.bagItem.aggregate({
@@ -187,7 +185,6 @@ export const bagRouter = createTRPCRouter({
     .input(itemInput)
     .mutation(async ({ ctx, input }) => {
       const item = await findOwnItem(ctx.db, ctx.session.user.id, input.itemId);
-      // Min 1: a sold-out row stays in the bag and shows its warning
       const quantity = Math.max(1, Math.min(item.quantity, item.variant.stock));
       await ctx.db.bagItem.update({
         where: { id: item.id },

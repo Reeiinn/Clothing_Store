@@ -26,7 +26,6 @@ const returnLabels: Record<ReturnStatus, string> = {
 
 export function OrdersView() {
   const [tab, setTab] = useState<Tab>("ALL");
-  // The tracking card always picks from every order, whatever the tab
   const all = api.order.listMine.useQuery({});
   const filtered = api.order.listMine.useQuery(
     tab === "ALL" ? {} : { status: tab },
@@ -74,13 +73,11 @@ export function OrdersView() {
     );
   }
 
-  // The newest order still on its way, else simply the newest order
   const featured =
     all.data.find(
       (order) => order.status === "PROCESSING" || order.status === "SHIPPED",
     ) ?? all.data[0]!;
 
-  // returns.listMine is newest first, so the first match is the latest request
   const returnStatus = new Map<number, ReturnStatus>();
   for (const request of returns.data ?? []) {
     if (!returnStatus.has(request.order.number)) {
@@ -163,7 +160,6 @@ function OrderHistoryRow({
         <p className="font-semibold">Order #{order.orderNumber}</p>
         <p className="text-muted text-xs">
           {formatDate(order.createdAt)}
-          {/* Phones show the count and amount here instead of in columns */}
           <span className="sm:hidden"> · {summary}</span>
         </p>
       </div>

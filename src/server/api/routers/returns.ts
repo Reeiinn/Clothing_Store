@@ -128,7 +128,6 @@ export const returnsRouter = createTRPCRouter({
       const userId = ctx.session.user.id;
 
       return ctx.db.$transaction(async (tx) => {
-        // Serialize return requests for an order before checking quantities.
         const lockedOrders = await tx.$queryRaw<{ id: string }[]>`
           SELECT "id"
           FROM "Order"

@@ -14,11 +14,6 @@ export type BagLineData = RouterOutputs["bag"]["get"]["items"][number];
 const linkButton =
   "text-sm underline underline-offset-2 hover:no-underline disabled:cursor-not-allowed disabled:opacity-50";
 
-/**
- * Every change refreshes bag.get and bag.count, so the lines, the summary and
- * the header count stay in step. The mutation stays "pending" until that
- * refresh finishes, which keeps the row's controls disabled meanwhile.
- */
 function useLineActions() {
   const utils = api.useUtils();
   const [error, setError] = useState<string>();
@@ -30,7 +25,6 @@ function useLineActions() {
     onMutate: () => setError(undefined),
     onSuccess: refresh,
     onError: (e: { message: string }) => {
-      // e.g. stock dropped: show why, and reload so the row shows fresh stock
       setError(e.message);
       void refresh();
     },
