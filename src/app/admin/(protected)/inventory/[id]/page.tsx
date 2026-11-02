@@ -14,8 +14,8 @@ export default function AdminProductPage() {
 
   return (
     <div className="flex flex-col gap-8">
-      <Link href="/products" className="text-sm underline underline-offset-2">
-        ← All products
+      <Link href="/inventory" className="text-sm underline underline-offset-2">
+        ← All inventory
       </Link>
 
       {grid.isError && (

@@ -74,12 +74,12 @@ export function VariantGrid({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-col gap-3">
         <div className="flex flex-col gap-1">
           <h2 className="text-xl font-semibold">Stock by size and color</h2>
           <p className="text-muted text-sm">Click any number to change it.</p>
         </div>
-        <ul className="flex items-center gap-4 text-sm">
+        <ul className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm">
           {legend.map((item) => (
             <li key={item.label} className="flex items-center gap-1.5">
               <span

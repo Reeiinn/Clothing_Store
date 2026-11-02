@@ -7,26 +7,7 @@ import { stockStatus } from "~/lib/stock";
 import { adminProcedure, createTRPCRouter } from "~/server/api/trpc";
 import { getLowStockThreshold } from "~/server/settings";
 
-const alertFilterSchema = z.enum(["ALL", "SOLD_OUT", "LOW"]);
-
-const alertPaginationSchema = z.object({
-  filter: alertFilterSchema,
-  page: z.number().int().min(1).default(1),
-  pageSize: z.number().int().min(1).max(100).default(20),
-});
-
 export const inventoryRouter = createTRPCRouter({
-  stats: adminProcedure.query(async ({ ctx }) => {
-    const threshold = await getLowStockThreshold(ctx.db);
-
-    const [lowStockCount, soldOutCount] = await Promise.all([
-      ctx.db.variant.count({ where: { stock: { gte: 1, lte: threshold } } }),
-      ctx.db.variant.count({ where: { stock: 0 } }),
-    ]);
-
-    return { lowStockCount, soldOutCount };
-  }),
-
   getThreshold: adminProcedure.query(async ({ ctx }) => ({
     threshold: await getLowStockThreshold(ctx.db),
   })),
@@ -42,77 +23,6 @@ export const inventoryRouter = createTRPCRouter({
       });
 
       return { threshold: setting.lowStockThreshold };
-    }),
-
-  alerts: adminProcedure
-    .input(alertPaginationSchema)
-    .query(async ({ ctx, input }) => {
-      const threshold = await getLowStockThreshold(ctx.db);
-      const stockFilter =
-        input.filter === "SOLD_OUT"
-          ? { stock: 0 }
-          : input.filter === "LOW"
-            ? { stock: { gte: 1, lte: threshold } }
-            : { stock: { lte: threshold } };
-
-      const where = stockFilter;
-      const [variants, total] = await Promise.all([
-        ctx.db.variant.findMany({
-          where,
-          orderBy: [
-            { stock: "asc" },
-            { product: { name: "asc" } },
-            { color: { name: "asc" } },
-            { size: "asc" },
-          ],
-          skip: (input.page - 1) * input.pageSize,
-          take: input.pageSize,
-          select: {
-            id: true,
-            stock: true,
-            size: true,
-            color: { select: { name: true, hex: true } },
-            product: { select: { id: true, name: true } },
-          },
-        }),
-        ctx.db.variant.count({ where }),
-      ]);
-
-      return {
-        rows: variants.map((variant) => ({
-          variantId: variant.id,
-          productId: variant.product.id,
-          productName: variant.product.name,
-          color: variant.color.name,
-          colorHex: variant.color.hex,
-          size: variant.size,
-          stock: variant.stock,
-          status: stockStatus(variant.stock, threshold),
-        })),
-        total,
-        page: input.page,
-        pageSize: input.pageSize,
-      };
-    }),
-
-  restock: adminProcedure
-    .input(
-      z.object({
-        variantId: z.string().min(1),
-        addQuantity: z.number().int().min(1),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      const variant = await ctx.db.variant.update({
-        where: { id: input.variantId },
-        data: {
-          stock: { increment: input.addQuantity },
-          restockRequestedAt: null,
-        },
-        select: { id: true, stock: true },
-      });
-
-      return { variantId: variant.id, stock: variant.stock };
     }),
 
   setStock: adminProcedure
@@ -279,9 +189,14 @@ export const inventoryRouter = createTRPCRouter({
         name: true,
         imageUrl: true,
         priceCents: true,
+        gender: true,
         category: { select: { name: true } },
         variants: {
-          select: { stock: true, color: { select: { name: true, hex: true } } },
+          select: {
+            stock: true,
+            size: true,
+            color: { select: { name: true, hex: true } },
+          },
         },
       },
     });
@@ -293,7 +208,11 @@ export const inventoryRouter = createTRPCRouter({
         name: product.name,
         imageUrl: product.imageUrl,
         priceCents: product.priceCents,
+        gender: product.gender,
         category: product.category.name,
+        sizes: SIZES.filter((size) =>
+          product.variants.some((variant) => variant.size === size),
+        ),
         colors: [
           ...new Map(
             product.variants.map((variant) => [
