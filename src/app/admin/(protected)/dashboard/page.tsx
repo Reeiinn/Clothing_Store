@@ -111,7 +111,7 @@ export default function AdminDashboardPage() {
                 >
                   <td className={td}>
                     <Link
-                      href={`/products/${item.productId}`}
+                      href={`/inventory/${item.productId}`}
                       className="font-medium underline underline-offset-2"
                     >
                       {item.productName}

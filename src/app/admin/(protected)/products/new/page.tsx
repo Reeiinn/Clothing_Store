@@ -27,7 +27,7 @@ export default function NewProductPage() {
         utils.inventory.invalidate(),
         utils.product.invalidate(),
       ]);
-      router.push(`/products/${id}`);
+      router.push(`/inventory/${id}`);
     },
     onError: (e) => setError(errorMessage(e)),
   });

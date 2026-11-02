@@ -10,6 +10,8 @@ import { api } from "~/trpc/react";
 const th = "px-4 py-3 text-left font-mono text-xs font-medium tracking-wide";
 const td = "px-4 py-3 align-middle text-sm";
 
+const genderLabel = { MEN: "Men", WOMEN: "Women", UNISEX: "Everyone" } as const;
+
 export default function AdminProductsPage() {
   const products = api.inventory.products.useQuery();
 
@@ -19,8 +21,14 @@ export default function AdminProductsPage() {
         <div className="flex flex-col gap-1.5">
           <h1 className="text-3xl font-semibold">Products</h1>
           <p className="text-muted text-sm">
-            Everything in the store. Click a product to see and change its
-            stock.
+            Everything sold in the store. To change stock, go to{" "}
+            <Link
+              href="/inventory"
+              className="text-ink underline underline-offset-2"
+            >
+              Inventory
+            </Link>
+            .
           </p>
         </div>
         <Link href="/products/new" className={buttonStyles()}>
@@ -40,10 +48,10 @@ export default function AdminProductsPage() {
             <tr>
               <th className={th}>PRODUCT</th>
               <th className={th}>CATEGORY</th>
+              <th className={th}>FOR</th>
               <th className={`${th} text-right`}>PRICE</th>
               <th className={th}>COLORS</th>
-              <th className={`${th} text-right`}>IN STOCK</th>
-              <th className={th}>STATUS</th>
+              <th className={th}>SIZES</th>
             </tr>
           </thead>
           <tbody>
@@ -64,13 +72,10 @@ export default function AdminProductsPage() {
             {products.data?.map((product) => (
               <tr
                 key={product.id}
-                className="border-line hover:bg-ink/5 border-b last:border-b-0"
+                className="border-line border-b last:border-b-0"
               >
                 <td className={td}>
-                  <Link
-                    href={`/products/${product.id}`}
-                    className="flex items-center gap-3 font-medium underline-offset-2 hover:underline"
-                  >
+                  <span className="flex items-center gap-3 font-medium">
                     <ProductImage
                       src={product.imageUrl}
                       alt=""
@@ -78,9 +83,10 @@ export default function AdminProductsPage() {
                       className="border-line size-12 shrink-0 border"
                     />
                     {product.name}
-                  </Link>
+                  </span>
                 </td>
                 <td className={td}>{product.category}</td>
+                <td className={td}>{genderLabel[product.gender]}</td>
                 <td className={`${td} text-right font-mono`}>
                   {formatPrice(product.priceCents)}
                 </td>
@@ -96,27 +102,8 @@ export default function AdminProductsPage() {
                     ))}
                   </span>
                 </td>
-                <td className={`${td} text-right font-mono`}>
-                  {product.totalStock}
-                </td>
-                <td className={td}>
-                  <span className="flex flex-wrap gap-1.5">
-                    {product.soldOut === 0 && product.low === 0 && (
-                      <span className="bg-ok-bg text-ok px-2 py-0.5 font-mono text-xs">
-                        ALL IN STOCK
-                      </span>
-                    )}
-                    {product.soldOut > 0 && (
-                      <span className="bg-danger-bg text-danger px-2 py-0.5 font-mono text-xs">
-                        {product.soldOut} SOLD OUT
-                      </span>
-                    )}
-                    {product.low > 0 && (
-                      <span className="bg-warn-bg text-warn px-2 py-0.5 font-mono text-xs">
-                        {product.low} LOW
-                      </span>
-                    )}
-                  </span>
+                <td className={`${td} font-mono text-xs`}>
+                  {product.sizes.join(" ")}
                 </td>
               </tr>
             ))}
