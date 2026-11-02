@@ -25,7 +25,7 @@ export function StatusBadge({
   return (
     <span
       className={cx(
-        "inline-block px-2 py-0.5 font-mono text-xs tracking-wide",
+        "inline-block rounded-full px-2.5 py-0.5 font-mono text-[11px] tracking-wide",
         styles[status],
       )}
     >

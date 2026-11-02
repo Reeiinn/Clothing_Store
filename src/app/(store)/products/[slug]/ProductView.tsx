@@ -136,17 +136,17 @@ export function ProductView({
               src={product.imageUrl}
               alt={product.name}
               sizes="(min-width: 1024px) 50vw, 100vw"
-              className="aspect-[4/5] w-full"
+              className="rounded-ui aspect-[4/5] w-full"
             />
           ) : (
             <>
               <ImagePlaceholder
                 label={`Photo · ${color}`}
-                className="aspect-[4/5] w-full"
+                className="rounded-ui aspect-[4/5] w-full"
               />
               <span
                 aria-hidden
-                className="bg-paper border-ink absolute bottom-4 left-4 border px-2 py-1 font-mono text-xs"
+                className="bg-paper border-line absolute bottom-4 left-4 rounded-full border px-3 py-1 font-mono text-xs"
               >
                 Photo · {color}
               </span>
@@ -161,7 +161,9 @@ export function ProductView({
           <h1 className="mt-3 text-3xl font-semibold sm:text-4xl">
             {product.name}
           </h1>
-          <p className="mt-3 text-2xl">{formatPrice(product.priceCents)}</p>
+          <p className="mt-3 text-2xl font-medium">
+            {formatPrice(product.priceCents)}
+          </p>
 
           <div className="mt-8">
             <p className="text-sm">
@@ -203,7 +205,7 @@ export function ProductView({
 
           <div
             aria-live="polite"
-            className="border-ink mt-7 flex gap-3 border px-4 py-4"
+            className="border-line rounded-ui mt-7 flex gap-3 border bg-white px-4 py-4"
           >
             <span
               aria-hidden
@@ -248,7 +250,7 @@ export function ProductView({
             </p>
           )}
 
-          <div className="border-ink mt-8 border-t">
+          <div className="border-line mt-8 border-t">
             <Section title="Details & fabric">
               <p>{product.description}</p>
               {product.fabric && (
@@ -284,8 +286,8 @@ export function ProductView({
             Tap a cell to pick that combination
           </p>
         </div>
-        <div className="mt-4 overflow-x-auto">
-          <table className="border-ink w-full min-w-[34rem] border text-sm">
+        <div className="border-line rounded-ui mt-4 overflow-x-auto border bg-white">
+          <table className="w-full min-w-[34rem] text-sm">
             <thead className="bg-placeholder">
               <tr>
                 <th
@@ -336,7 +338,7 @@ export function ProductView({
                           aria-label={`${c.name} / ${s}: ${text}`}
                           onClick={() => select(c.name, s)}
                           className={cx(
-                            "h-10 w-full border font-mono text-xs transition-colors",
+                            "rounded-ui h-10 w-full border font-mono text-xs transition-colors",
                             {
                               SOLD_OUT: "bg-line/60 text-muted",
                               LOW: "bg-placeholder",
@@ -373,7 +375,7 @@ function Section({
 }) {
   return (
     <details className="group border-line border-b">
-      <summary className="flex cursor-pointer list-none items-center justify-between py-4 [&::-webkit-details-marker]:hidden">
+      <summary className="flex cursor-pointer list-none items-center justify-between py-4 font-medium [&::-webkit-details-marker]:hidden">
         {title}
         <span
           aria-hidden

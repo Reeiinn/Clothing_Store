@@ -38,7 +38,7 @@ export function BagView() {
       <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:gap-10">
         <div className="flex min-w-0 flex-1 flex-col gap-8">
           {items.length === 0 ? (
-            <div className="border-ink flex flex-col items-start gap-4 border-t py-8">
+            <div className="border-line flex flex-col items-start gap-4 border-t py-8">
               <p className="text-lg font-medium">Your bag is empty</p>
               <Link
                 href="/products"
@@ -56,7 +56,7 @@ export function BagView() {
           )}
 
           {saved.length > 0 && (
-            <section className="border-ink flex flex-col gap-2 border-t pt-6">
+            <section className="border-line flex flex-col gap-2 border-t pt-6">
               <h2 className="text-xl font-semibold">Saved for later</h2>
               <ul>
                 {saved.map((line) => (

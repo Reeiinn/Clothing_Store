@@ -29,7 +29,7 @@ export function OrderTracking({
 
   if (order.isPending) {
     return (
-      <div className="border-ink text-muted border p-6 text-sm">
+      <div className="border-line rounded-ui text-muted border bg-white p-6 text-sm">
         Loading order…
       </div>
     );
@@ -46,8 +46,8 @@ export function OrderTracking({
   const itemCount = data.items.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
-    <section className="border-ink border">
-      <div className="border-ink bg-placeholder flex flex-wrap items-start justify-between gap-3 border-b px-4 py-5 sm:px-6">
+    <section className="border-line rounded-ui overflow-hidden border bg-white">
+      <div className="border-line bg-placeholder flex flex-wrap items-start justify-between gap-3 border-b px-4 py-5 sm:px-6">
         <div className="flex flex-col gap-1">
           <h2 className="text-xl font-semibold">Order #{data.number}</h2>
           <p className="text-muted text-sm">

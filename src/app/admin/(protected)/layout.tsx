@@ -16,7 +16,7 @@ export default async function AdminLayout({
 
   return (
     <div className="min-h-screen md:flex">
-      <aside className="bg-placeholder border-ink flex shrink-0 flex-col gap-4 border-b px-4 py-4 md:w-56 md:gap-8 md:border-r md:border-b-0 md:py-8">
+      <aside className="border-line flex shrink-0 flex-col gap-4 border-b bg-white px-4 py-4 md:w-56 md:gap-8 md:border-r md:border-b-0 md:py-8">
         <Link href="/dashboard" className="flex flex-col px-3">
           <span className="font-semibold tracking-[0.2em]">STYLEGRID</span>
           <span className="text-muted font-mono text-xs tracking-wide">

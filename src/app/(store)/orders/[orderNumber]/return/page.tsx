@@ -76,7 +76,7 @@ export default async function ReturnPage({
       {eligibility.eligible ? (
         <ReturnForm orderNumber={orderNumber} items={items} />
       ) : (
-        <div className="border-ink flex flex-col items-start gap-4 border p-6 sm:p-8">
+        <div className="border-line rounded-ui flex flex-col items-start gap-4 border bg-white p-6 sm:p-8">
           <p className="text-lg font-medium">
             This order can&apos;t be returned
           </p>

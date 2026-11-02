@@ -9,11 +9,15 @@ const links = [
 
 export function StoreFooter() {
   return (
-    <footer className="border-line mt-16 border-t">
-      <div className="text-muted mx-auto flex max-w-7xl flex-col gap-4 px-4 py-8 text-sm sm:flex-row sm:items-center sm:justify-between sm:px-6">
+    <footer className="border-line mt-24 border-t bg-white">
+      <div className="mx-auto flex max-w-7xl flex-col gap-8 px-4 py-12 text-sm sm:flex-row sm:items-end sm:justify-between sm:px-6">
+        <div>
+          <p className="font-semibold tracking-[0.2em]">STYLEGRID</p>
+          <p className="text-muted mt-2">© StyleGrid Retail</p>
+        </div>
         <nav
           aria-label="Customer service"
-          className="flex flex-wrap gap-x-6 gap-y-2"
+          className="text-muted flex flex-wrap gap-x-8 gap-y-3"
         >
           {links.map((link) => (
             <Link key={link.href} href={link.href} className="hover:text-ink">
@@ -21,7 +25,6 @@ export function StoreFooter() {
             </Link>
           ))}
         </nav>
-        <p>© StyleGrid Retail</p>
       </div>
     </footer>
   );

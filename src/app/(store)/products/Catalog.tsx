@@ -159,7 +159,9 @@ export function Catalog() {
 
       <div className="mt-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="min-h-10 text-4xl font-semibold">{heading}</h1>
+          <h1 className="min-h-10 text-4xl font-semibold sm:text-5xl">
+            {heading}
+          </h1>
           <p className="text-muted mt-1 min-h-5 text-sm">
             {total !== undefined &&
               `${total} ${total === 1 ? "item" : "items"}`}
@@ -176,8 +178,10 @@ export function Catalog() {
                   aria-pressed={active}
                   onClick={() => update({ gender: active ? undefined : g })}
                   className={cx(
-                    "border-ink h-11 border px-5 text-sm transition-colors not-first:-ml-px",
-                    active ? "bg-ink text-paper" : "hover:bg-ink/5",
+                    "first:rounded-l-ui last:rounded-r-ui h-11 border px-5 text-sm transition-colors not-first:-ml-px",
+                    active
+                      ? "border-ink bg-ink text-paper relative"
+                      : "border-line hover:bg-ink/5 bg-white",
                   )}
                 >
                   {genderLabel[g]}
@@ -190,7 +194,7 @@ export function Catalog() {
             <select
               value={filters.sort}
               onChange={(e) => update({ sort: e.target.value })}
-              className="border-ink h-11 border bg-transparent px-3 text-sm"
+              className="border-line hover:border-ink rounded-ui h-11 border bg-white px-3 text-sm"
             >
               {sortOptions.map((o) => (
                 <option key={o.value} value={o.value}>
@@ -224,7 +228,7 @@ export function Catalog() {
                 type="button"
                 onClick={() => update(chip.clear)}
                 aria-label={`Remove filter ${chip.label}`}
-                className="border-ink hover:bg-ink/5 flex h-8 items-center gap-2 rounded-full border px-3 text-sm"
+                className="border-line hover:border-ink flex h-8 items-center gap-2 rounded-full border bg-white px-3 text-sm"
               >
                 {chip.label}
                 <span aria-hidden>×</span>
@@ -246,7 +250,7 @@ export function Catalog() {
               Couldn&apos;t load products. Please refresh the page.
             </p>
           ) : total === 0 ? (
-            <div className="border-line border py-16 text-center">
+            <div className="border-line rounded-ui border bg-white py-16 text-center">
               <p className="text-lg">No items match these filters</p>
               <Button variant="secondary" className="mt-5" onClick={clearAll}>
                 Clear all
@@ -312,9 +316,20 @@ export function Catalog() {
             <button
               type="button"
               onClick={() => setPanelOpen(false)}
-              className="font-mono text-xs tracking-wide"
+              aria-label="Close filters"
+              className="hover:bg-ink/5 -m-2 flex size-10 items-center justify-center rounded-full"
             >
-              CLOSE
+              <svg
+                aria-hidden
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+                className="size-5"
+              >
+                <path d="M6 6l12 12M18 6 6 18" />
+              </svg>
             </button>
           </div>
           <div className="flex-1 overflow-y-auto px-4 py-6">{filterPanel}</div>
@@ -426,7 +441,7 @@ function FilterPanel({
               setMySize(e.target.value);
               if (filters.inStockSize) update({ inStockSize: e.target.value });
             }}
-            className="border-line h-8 border bg-transparent px-2 font-mono text-sm"
+            className="border-line rounded-ui h-8 border bg-white px-2 font-mono text-sm"
           >
             {SIZES.map((size) => (
               <option key={size} value={size}>
@@ -460,9 +475,9 @@ function FilterGroup({
 function CardSkeleton() {
   return (
     <li aria-hidden className="animate-pulse">
-      <div className="bg-placeholder aspect-[3/4] w-full" />
-      <div className="bg-placeholder mt-3 h-4 w-2/3" />
-      <div className="bg-placeholder mt-2 h-3 w-1/3" />
+      <div className="bg-placeholder rounded-ui aspect-[3/4] w-full" />
+      <div className="bg-placeholder mt-3 h-4 w-2/3 rounded" />
+      <div className="bg-placeholder mt-2 h-3 w-1/3 rounded" />
     </li>
   );
 }

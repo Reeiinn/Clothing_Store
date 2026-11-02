@@ -12,7 +12,7 @@ export default async function BagPage() {
     return (
       <div className="flex flex-col items-start gap-6">
         <h1 className="text-3xl font-semibold sm:text-4xl">Your bag</h1>
-        <div className="border-ink flex w-full flex-col items-start gap-4 border p-8">
+        <div className="border-line rounded-ui flex w-full flex-col items-start gap-4 border bg-white p-8">
           <p className="text-lg font-medium">Sign in to see your bag</p>
           <p className="text-muted text-sm">
             Your bag is saved to your account, so you can pick up where you left

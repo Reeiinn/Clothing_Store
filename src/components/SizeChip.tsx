@@ -16,12 +16,12 @@ export function SizeChip({ size, selected, soldOut, onClick }: SizeChipProps) {
       aria-pressed={selected}
       aria-label={soldOut ? `${size}, sold out` : size}
       className={cx(
-        "h-10 min-w-12 border px-3 font-mono text-sm transition-colors",
+        "rounded-ui h-11 min-w-12 border px-3 font-mono text-sm transition-colors",
         soldOut
           ? "border-line text-muted cursor-not-allowed line-through"
           : selected
             ? "border-ink bg-ink text-paper"
-            : "border-line hover:border-ink",
+            : "border-line hover:border-ink bg-white",
       )}
     >
       {size}

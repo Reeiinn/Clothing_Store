@@ -16,10 +16,10 @@ export function QuantityStepper({
   disabled = false,
 }: QuantityStepperProps) {
   const buttonClass =
-    "size-9 text-lg transition-colors hover:bg-ink/5 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent";
+    "size-11 text-lg transition-colors hover:bg-ink/5 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent";
 
   return (
-    <div className="border-line inline-flex items-center border">
+    <div className="border-line rounded-ui inline-flex items-center overflow-hidden border bg-white">
       <button
         type="button"
         aria-label="Decrease quantity"

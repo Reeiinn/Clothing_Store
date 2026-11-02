@@ -23,7 +23,7 @@ export function CheckoutSummary({
   return (
     <aside
       aria-label="Order summary"
-      className="border-ink flex w-full flex-col gap-4 border p-6 lg:sticky lg:top-6 lg:w-[340px] lg:shrink-0"
+      className="border-line rounded-ui flex w-full flex-col gap-4 border bg-white p-6 lg:sticky lg:top-6 lg:w-[340px] lg:shrink-0"
     >
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">Order summary</h2>
@@ -63,7 +63,7 @@ export function CheckoutSummary({
         </div>
       </div>
 
-      <div className="border-ink flex items-start justify-between border-t pt-4 text-lg font-semibold">
+      <div className="border-line flex items-start justify-between border-t pt-4 text-lg font-semibold">
         <p>Total</p>
         <p>{formatPrice(subtotalCents + shippingCents)}</p>
       </div>

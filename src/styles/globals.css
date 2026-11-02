@@ -10,8 +10,8 @@
   --color-paper: #fafaf8;
   --color-ink: #111111;
   --color-muted: #6b6b6b;
-  --color-line: #dcdcdc;
-  --color-placeholder: #ececea;
+  --color-line: #e2e2df;
+  --color-placeholder: #efefec;
 
   --color-ok: #2f6b3a;
   --color-ok-bg: #e5f0e6;
@@ -21,11 +21,27 @@
   --color-danger-bg: #f8e2df;
   --color-info: #1f4f8a;
   --color-info-bg: #e1ebf7;
+
+  --radius-ui: 0.375rem;
 }
 
 @layer base {
   body {
     @apply bg-paper text-ink font-sans antialiased;
+  }
+
+  h1,
+  h2 {
+    @apply tracking-tight text-balance;
+  }
+
+  a,
+  button {
+    @apply transition-colors duration-150;
+  }
+
+  button:not(:disabled) {
+    @apply cursor-pointer;
   }
 
   :focus-visible {

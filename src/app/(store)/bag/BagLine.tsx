@@ -46,7 +46,7 @@ function useLineActions() {
 
 function Warning({ text }: { text: string }) {
   return (
-    <p className="border-warn bg-warn-bg text-warn inline-block self-start border px-2 py-1 font-mono text-xs">
+    <p className="bg-warn-bg text-warn inline-block self-start rounded-full px-2.5 py-1 font-mono text-xs">
       {text}
     </p>
   );
@@ -81,12 +81,12 @@ export function BagLine({ line }: { line: BagLineData }) {
     useLineActions();
 
   return (
-    <li className="border-ink flex gap-4 border-t py-6 sm:gap-5">
+    <li className="border-line flex gap-4 border-t py-6 sm:gap-5">
       <ProductImage
         src={line.imageUrl}
         alt={`${line.name}, ${line.color}`}
         sizes="112px"
-        className="h-[110px] w-[82px] shrink-0 sm:h-[149px] sm:w-28"
+        className="rounded-ui h-[110px] w-[82px] shrink-0 sm:h-[149px] sm:w-28"
       />
 
       <div className="flex min-w-0 flex-1 flex-col gap-3">
@@ -150,7 +150,7 @@ export function SavedLine({ line }: { line: BagLineData }) {
           src={line.imageUrl}
           alt={`${line.name}, ${line.color}`}
           sizes="64px"
-          className="h-[85px] w-16 shrink-0"
+          className="rounded-ui h-[85px] w-16 shrink-0"
         />
         <div className="flex min-w-0 flex-1 flex-col gap-1">
           <Details line={line} />
