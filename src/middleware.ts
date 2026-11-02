@@ -8,7 +8,7 @@ export function middleware(request: NextRequest) {
 
   if (isAdminHost(host)) {
     if (url.pathname === "/") {
-      url.pathname = "/inventory";
+      url.pathname = "/dashboard";
       return NextResponse.redirect(url);
     }
     url.pathname = `/admin${url.pathname}`;

@@ -6,7 +6,7 @@ import { LoginForm } from "~/app/(store)/login/LoginForm";
 
 export default async function AdminLoginPage() {
   const session = await auth();
-  if (session?.user.role === "ADMIN") redirect("/inventory");
+  if (session?.user.role === "ADMIN") redirect("/dashboard");
 
   return (
     <section className="mx-auto w-full max-w-sm px-4 py-16">
@@ -26,7 +26,7 @@ export default async function AdminLoginPage() {
           <Button type="submit">Sign out</Button>
         </form>
       ) : (
-        <LoginForm callbackUrl="/inventory" />
+        <LoginForm callbackUrl="/dashboard" />
       )}
     </section>
   );

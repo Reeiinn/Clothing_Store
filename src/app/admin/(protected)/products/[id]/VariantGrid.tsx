@@ -5,7 +5,7 @@ import { useState } from "react";
 import { Button } from "~/components/Button";
 import { cx } from "~/lib/cx";
 import { api, type RouterOutputs } from "~/trpc/react";
-import { errorMessage } from "../_components/error-message";
+import { errorMessage } from "../../_components/error-message";
 
 type Grid = RouterOutputs["inventory"]["variantMatrix"];
 
@@ -17,8 +17,8 @@ const cellStyles = {
 
 const legend = [
   { label: "Sold out", className: cellStyles.SOLD_OUT },
-  { label: "Low", className: cellStyles.LOW },
-  { label: "OK", className: cellStyles.OK },
+  { label: "Running low", className: cellStyles.LOW },
+  { label: "In stock", className: cellStyles.OK },
 ];
 
 export function VariantGrid({
@@ -43,15 +43,9 @@ export function VariantGrid({
   });
 
   if (loading) {
-    return <p className="text-muted text-sm">Loading stock grid…</p>;
+    return <p className="text-muted text-sm">Loading stock…</p>;
   }
-  if (!grid) {
-    return (
-      <p className="border-ink border p-6 text-sm">
-        Pick a product in the alerts table to see its stock.
-      </p>
-    );
-  }
+  if (!grid) return null;
 
   const editingCell = editingId
     ? grid.cells.find((cell) => cell.variantId === editingId)
@@ -81,9 +75,10 @@ export function VariantGrid({
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-xl font-semibold">
-          Stock by variant — {grid.productName}
-        </h2>
+        <div className="flex flex-col gap-1">
+          <h2 className="text-xl font-semibold">Stock by size and color</h2>
+          <p className="text-muted text-sm">Click any number to change it.</p>
+        </div>
         <ul className="flex items-center gap-4 text-sm">
           {legend.map((item) => (
             <li key={item.label} className="flex items-center gap-1.5">
@@ -155,14 +150,14 @@ export function VariantGrid({
         </table>
       </div>
 
-      {editing ? (
+      {editing && (
         <form
           onSubmit={submit}
           className="border-ink flex flex-wrap items-center gap-3 border p-4"
         >
           <label htmlFor="exact-stock" className="text-sm">
-            Set exact stock for{" "}
-            <span className="font-medium">{editing.label}</span>
+            How many <span className="font-medium">{editing.label}</span> do you
+            have now?
           </label>
           <input
             id="exact-stock"
@@ -193,10 +188,6 @@ export function VariantGrid({
             </p>
           )}
         </form>
-      ) : (
-        <p className="text-muted text-xs">
-          Click a cell to set its exact stock.
-        </p>
       )}
     </div>
   );

@@ -18,19 +18,12 @@ export const inventoryRouter = createTRPCRouter({
   stats: adminProcedure.query(async ({ ctx }) => {
     const threshold = await getLowStockThreshold(ctx.db);
 
-    const [lowStockCount, soldOutCount, ordersToShip, openReturns] =
-      await Promise.all([
-        ctx.db.variant.count({
-          where: { stock: { gte: 1, lte: threshold } },
-        }),
-        ctx.db.variant.count({ where: { stock: 0 } }),
-        ctx.db.order.count({ where: { status: "PROCESSING" } }),
-        ctx.db.returnRequest.count({
-          where: { status: { in: ["REQUESTED", "APPROVED"] } },
-        }),
-      ]);
+    const [lowStockCount, soldOutCount] = await Promise.all([
+      ctx.db.variant.count({ where: { stock: { gte: 1, lte: threshold } } }),
+      ctx.db.variant.count({ where: { stock: 0 } }),
+    ]);
 
-    return { lowStockCount, soldOutCount, ordersToShip, openReturns };
+    return { lowStockCount, soldOutCount };
   }),
 
   getThreshold: adminProcedure.query(async ({ ctx }) => ({
@@ -76,16 +69,9 @@ export const inventoryRouter = createTRPCRouter({
           select: {
             id: true,
             stock: true,
-            restockRequestedAt: true,
             size: true,
             color: { select: { name: true, hex: true } },
-            product: {
-              select: {
-                id: true,
-                name: true,
-                category: { select: { name: true } },
-              },
-            },
+            product: { select: { id: true, name: true } },
           },
         }),
         ctx.db.variant.count({ where }),
@@ -96,45 +82,16 @@ export const inventoryRouter = createTRPCRouter({
           variantId: variant.id,
           productId: variant.product.id,
           productName: variant.product.name,
-          category: variant.product.category.name,
           color: variant.color.name,
           colorHex: variant.color.hex,
           size: variant.size,
           stock: variant.stock,
           status: stockStatus(variant.stock, threshold),
-          restockRequested: variant.restockRequestedAt !== null,
         })),
         total,
         page: input.page,
         pageSize: input.pageSize,
       };
-    }),
-
-  requestRestock: adminProcedure
-    .input(z.object({ variantId: z.string().min(1) }))
-    .mutation(async ({ ctx, input }) => {
-      try {
-        await ctx.db.variant.update({
-          where: { id: input.variantId },
-          data: { restockRequestedAt: new Date() },
-        });
-      } catch (error) {
-        if (
-          error instanceof TRPCError ||
-          (typeof error === "object" &&
-            error !== null &&
-            "code" in error &&
-            error.code === "P2025")
-        ) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "Variant not found.",
-          });
-        }
-        throw error;
-      }
-
-      return { success: true };
     }),
 
   restock: adminProcedure
@@ -185,6 +142,9 @@ export const inventoryRouter = createTRPCRouter({
         where: { id: input.productId },
         select: {
           name: true,
+          imageUrl: true,
+          priceCents: true,
+          category: { select: { name: true } },
           variants: {
             select: {
               id: true,
@@ -237,9 +197,52 @@ export const inventoryRouter = createTRPCRouter({
 
       return {
         productName: product.name,
+        imageUrl: product.imageUrl,
+        priceCents: product.priceCents,
+        category: product.category.name,
         sizes,
         colors,
         cells,
       };
     }),
+
+  products: adminProcedure.query(async ({ ctx }) => {
+    const threshold = await getLowStockThreshold(ctx.db);
+    const products = await ctx.db.product.findMany({
+      orderBy: { name: "asc" },
+      select: {
+        id: true,
+        name: true,
+        imageUrl: true,
+        priceCents: true,
+        category: { select: { name: true } },
+        variants: {
+          select: { stock: true, color: { select: { name: true, hex: true } } },
+        },
+      },
+    });
+
+    return products.map((product) => {
+      const stocks = product.variants.map((variant) => variant.stock);
+      return {
+        id: product.id,
+        name: product.name,
+        imageUrl: product.imageUrl,
+        priceCents: product.priceCents,
+        category: product.category.name,
+        colors: [
+          ...new Map(
+            product.variants.map((variant) => [
+              variant.color.name,
+              variant.color,
+            ]),
+          ).values(),
+        ],
+        totalStock: stocks.reduce((sum, stock) => sum + stock, 0),
+        soldOut: stocks.filter((stock) => stock === 0).length,
+        low: stocks.filter((stock) => stockStatus(stock, threshold) === "LOW")
+          .length,
+      };
+    });
+  }),
 });

@@ -48,7 +48,7 @@ async function AccountLinks({ className }: { className?: string }) {
     <div className={className}>
       {session.user.role === "ADMIN" && (
         <a
-          href={`//${adminHost(requestHost(await headers()))}/inventory`}
+          href={`//${adminHost(requestHost(await headers()))}/dashboard`}
           className="hover:underline"
         >
           Admin
