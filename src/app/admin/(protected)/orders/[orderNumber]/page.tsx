@@ -29,7 +29,7 @@ export default function AdminOrderDetailPage() {
   );
 
   const back = (
-    <Link href="/admin/orders" className="text-sm underline">
+    <Link href="/orders" className="text-sm underline">
       ← Back to orders
     </Link>
   );

@@ -147,7 +147,7 @@ export default function AdminReturnsPage() {
               <div className="flex flex-col gap-1">
                 <div className="flex items-center gap-3">
                   <Link
-                    href={`/admin/orders/${request.order.number}`}
+                    href={`/orders/${request.order.number}`}
                     className="font-mono font-medium underline"
                   >
                     Order #{request.order.number}
