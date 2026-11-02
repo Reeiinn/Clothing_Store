@@ -130,9 +130,9 @@ model Color {
 }
 
 model Product {
-  id          String    @id @default(cuid())
+  id          String        @id @default(cuid())
   name        String
-  slug        String    @unique
+  slug        String        @unique
   description String
   fabric      String?
   fitNotes    String?
@@ -140,11 +140,19 @@ model Product {
   priceCents  Int // centavos
   imageUrl    String?
   categoryId  String
-  category    Category  @relation(fields: [categoryId], references: [id])
+  category    Category      @relation(fields: [categoryId], references: [id])
   variants    Variant[]
-  createdAt   DateTime  @default(now())
+  image       ProductImage?
+  createdAt   DateTime      @default(now())
 
   @@index([categoryId, gender])
+}
+
+model ProductImage {
+  productId   String  @id
+  data        Bytes
+  contentType String
+  product     Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 }
 
 model Variant {

@@ -21,7 +21,8 @@ export default function AdminProductsPage() {
         <div className="flex flex-col gap-1.5">
           <h1 className="text-3xl font-semibold">Products</h1>
           <p className="text-muted text-sm">
-            Everything sold in the store. To change stock, go to{" "}
+            Everything sold in the store. Click a product to edit it. To change
+            stock, go to{" "}
             <Link
               href="/inventory"
               className="text-ink underline underline-offset-2"
@@ -52,19 +53,22 @@ export default function AdminProductsPage() {
               <th className={`${th} text-right`}>PRICE</th>
               <th className={th}>COLORS</th>
               <th className={th}>SIZES</th>
+              <th className={th}>
+                <span className="sr-only">Edit</span>
+              </th>
             </tr>
           </thead>
           <tbody>
             {products.isPending && (
               <tr>
-                <td colSpan={6} className={`${td} text-muted`}>
+                <td colSpan={7} className={`${td} text-muted`}>
                   Loading products…
                 </td>
               </tr>
             )}
             {products.data?.length === 0 && (
               <tr>
-                <td colSpan={6} className={`${td} text-muted`}>
+                <td colSpan={7} className={`${td} text-muted`}>
                   No products yet.
                 </td>
               </tr>
@@ -72,17 +76,22 @@ export default function AdminProductsPage() {
             {products.data?.map((product) => (
               <tr
                 key={product.id}
-                className="border-line border-b last:border-b-0"
+                className="border-line hover:bg-ink/5 relative border-b last:border-b-0"
               >
                 <td className={td}>
-                  <span className="flex items-center gap-3 font-medium">
+                  <span className="flex items-center gap-3">
                     <ProductImage
                       src={product.imageUrl}
                       alt=""
                       sizes="48px"
                       className="border-line size-12 shrink-0 border"
                     />
-                    {product.name}
+                    <Link
+                      href={`/products/${product.id}`}
+                      className="focus-visible:after:outline-ink font-medium after:absolute after:inset-0 focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:-outline-offset-2"
+                    >
+                      {product.name}
+                    </Link>
                   </span>
                 </td>
                 <td className={td}>{product.category}</td>
@@ -104,6 +113,9 @@ export default function AdminProductsPage() {
                 </td>
                 <td className={`${td} font-mono text-xs`}>
                   {product.sizes.join(" ")}
+                </td>
+                <td className={`${td} text-muted text-right`} aria-hidden>
+                  →
                 </td>
               </tr>
             ))}
