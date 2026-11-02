@@ -1,5 +1,6 @@
 import { bagRouter } from "~/server/api/routers/bag";
 import { productRouter } from "~/server/api/routers/product";
+import { inventoryRouter } from "~/server/api/routers/inventory";
 import { userRouter } from "~/server/api/routers/user";
 import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
 import { checkoutRouter } from "~/server/api/routers/checkout";
