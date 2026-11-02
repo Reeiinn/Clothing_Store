@@ -25,7 +25,6 @@ export function SizeGuide() {
       <dialog
         ref={dialog}
         aria-labelledby="size-guide-title"
-        // Clicking the backdrop closes it
         onClick={(e) => {
           if (e.target === e.currentTarget) dialog.current?.close();
         }}

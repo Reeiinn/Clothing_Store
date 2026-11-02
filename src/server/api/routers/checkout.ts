@@ -170,7 +170,6 @@ export const checkoutRouter = createTRPCRouter({
           ? deliveryOptions[0].feeCents
           : deliveryOptions[1].feeCents;
 
-      // Only this non-sensitive payment detail is persisted.
       const cardLast4 =
         input.payment.method === "CARD"
           ? input.payment.cardNumber.slice(-4)

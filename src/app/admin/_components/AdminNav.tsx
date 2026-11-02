@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 
 import { cx } from "~/lib/cx";
 
-// No href means the page isn't built yet.
 const links: { label: string; href?: string }[] = [
   { label: "Dashboard" },
   { label: "Inventory", href: "/admin/inventory" },

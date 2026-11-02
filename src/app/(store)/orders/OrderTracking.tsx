@@ -111,11 +111,9 @@ function ProgressTracker({ order }: { order: Order }) {
   const dates = [order.createdAt, order.shippedAt, order.deliveredAt];
 
   return (
-    // Vertical on phones, horizontal from sm up
     <ol className="flex flex-col sm:flex-row">
       {steps.map((step, i) => {
         const reached = i <= current;
-        // The furthest step is "in progress" unless the order is delivered
         const inProgress = i === current && step !== "DELIVERED";
         const date = dates[i];
 
@@ -222,7 +220,6 @@ function CancelOrder({ orderNumber }: { orderNumber: number }) {
     onMutate: () => setError(undefined),
     onSuccess: async () => {
       setConfirming(false);
-      // Refetch so the card and the order history show the new status
       await Promise.all([
         utils.order.byNumber.invalidate({ orderNumber }),
         utils.order.listMine.invalidate(),

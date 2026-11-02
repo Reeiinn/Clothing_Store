@@ -26,7 +26,6 @@ export function OrderActions({
       setMode("idle");
       setTrackingNumber("");
       setError(null);
-      // Refetch so the row (and the detail page) show the new status.
       await Promise.all([
         utils.order.adminList.invalidate(),
         utils.order.adminGet.invalidate(),

@@ -3,7 +3,6 @@ import Image from "next/image";
 import { ImagePlaceholder } from "~/components/ImagePlaceholder";
 import { cx } from "~/lib/cx";
 
-// Falls back to the placeholder when a product has no imageUrl.
 export function ProductImage({
   src,
   alt,

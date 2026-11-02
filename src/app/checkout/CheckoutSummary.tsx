@@ -68,7 +68,6 @@ export function CheckoutSummary({
         <p>{formatPrice(subtotalCents + shippingCents)}</p>
       </div>
 
-      {/* Lives outside the <form>, so it points at it by id */}
       <Button
         type="submit"
         form="checkout-form"

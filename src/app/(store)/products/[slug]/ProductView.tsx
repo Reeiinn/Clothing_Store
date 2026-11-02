@@ -42,8 +42,6 @@ export function ProductView({
   const pathname = usePathname();
   const utils = api.useUtils();
 
-  // Variants are sorted by color then size, so this is the first color with
-  // stock and its first in-stock size
   const first =
     product.variants.find((v) => v.stock > 0) ?? product.variants[0];
   const [color, setColor] = useState(first?.color ?? "");

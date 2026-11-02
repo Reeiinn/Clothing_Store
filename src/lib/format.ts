@@ -7,7 +7,7 @@ export function formatPrice(cents: number) {
   return peso.format(cents / 100);
 }
 
-// A fixed time zone keeps server-rendered and browser-rendered dates the same
+// Fixed time zone so the server and browser render the same date
 const date = new Intl.DateTimeFormat("en-PH", {
   dateStyle: "medium",
   timeZone: "Asia/Manila",

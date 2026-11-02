@@ -22,7 +22,6 @@ export default async function CheckoutSuccessPage({
   const orderNumber = Number(order);
   if (!Number.isInteger(orderNumber) || orderNumber < 1) notFound();
 
-  // Only confirm an order that exists and belongs to this user
   const found = await db.order.findFirst({
     where: { number: orderNumber, userId: session.user.id },
     select: { number: true },

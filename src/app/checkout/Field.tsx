@@ -13,7 +13,6 @@ type FieldProps = Omit<
   onValue: (value: string) => void;
 };
 
-/** A labelled input that shows its own error, used for every checkout field. */
 export function Field({
   name,
   label,

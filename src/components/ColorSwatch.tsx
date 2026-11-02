@@ -4,7 +4,6 @@ type ColorSwatchProps = {
   name: string;
   hex: string;
   selected?: boolean;
-  // Unlike SizeChip this stays clickable, so you can switch color first
   soldOut?: boolean;
   onClick?: () => void;
 };

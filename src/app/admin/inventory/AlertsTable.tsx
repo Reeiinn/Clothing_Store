@@ -33,7 +33,6 @@ function RowActions({ item }: { item: AlertItem }) {
       setAdding(false);
       setQuantity("");
       setError(null);
-      // The row updates or leaves the list; the cards and grid change too.
       await utils.inventory.invalidate();
     },
     onError: (e) => setError(errorMessage(e)),

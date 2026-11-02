@@ -6,7 +6,6 @@ export function stockStatus(stock: number, threshold: number): StockStatus {
   return "OK";
 }
 
-// Shown on bag and checkout lines
 export function lineWarning(
   stock: number,
   quantity: number,

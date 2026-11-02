@@ -28,7 +28,6 @@ export default async function ReturnPage({
   const orderNumber = Number(param);
   if (!Number.isInteger(orderNumber) || orderNumber < 1) notFound();
 
-  // Both only find the signed-in user's orders, so anyone else's is a 404
   const [order, eligibility] = await Promise.all([
     api.order.byNumber({ orderNumber }),
     api.returns.eligibility({ orderNumber }),
@@ -37,7 +36,6 @@ export default async function ReturnPage({
     throw error;
   });
 
-  // eligibility has what's returnable, the order has the prices
   const prices = new Map(
     order.items.map((item) => [item.id, item.unitPriceCents]),
   );

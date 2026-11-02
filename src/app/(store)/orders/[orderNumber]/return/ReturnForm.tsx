@@ -42,7 +42,6 @@ export function ReturnForm({
   const create = api.returns.create.useMutation({
     onMutate: () => setError(undefined),
     onSuccess: async () => {
-      // So My orders shows the new return status
       await Promise.all([utils.order.invalidate(), utils.returns.invalidate()]);
     },
     onError: (e) => setError(e.message),
@@ -103,7 +102,6 @@ export function ReturnForm({
   }
 
   return (
-    // On phones the summary drops below the items
     <form
       onSubmit={submit}
       className="flex flex-col gap-8 lg:flex-row lg:items-start lg:gap-10"

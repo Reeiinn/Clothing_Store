@@ -35,7 +35,6 @@ function isSize(value: string | null): value is SizeCode {
   return SIZES.some((s) => s === value);
 }
 
-// The URL is the source of truth, so links can be shared and Back works
 function parseFilters(params: URLSearchParams) {
   const list = (key: string) =>
     params.get(key)?.split(",").filter(Boolean) ?? [];
@@ -78,7 +77,6 @@ export function Catalog() {
       if (value) next.set(key, value);
       else next.delete(key);
     }
-    // Any filter change starts the results over from the first page
     if (!("page" in changes)) next.delete("page");
     const qs = next.toString().replaceAll("%2C", ",");
     router.push(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
@@ -92,7 +90,6 @@ export function Catalog() {
 
   const { page, ...query } = filters;
   const facets = api.product.facets.useQuery({ gender: filters.gender });
-  // One cached query per page, so "Load more" only fetches the new page
   const pages = api.useQueries((t) =>
     Array.from({ length: page }, (_, i) =>
       t.product.list({ ...query, page: i + 1, pageSize: PAGE_SIZE }),
@@ -344,7 +341,6 @@ function FilterPanel({
   facets: RouterOutputs["product"]["facets"] | undefined;
   update: Update;
 }) {
-  // Remembers the picked size while the checkbox is off
   const [mySize, setMySize] = useState<SizeCode>(filters.inStockSize ?? "M");
   const availabilitySize = filters.inStockSize ?? mySize;
 

@@ -106,7 +106,6 @@ export function CheckoutForm({ summary }: { summary: Summary }) {
   const router = useRouter();
   const utils = api.useUtils();
 
-  // The default address comes first, so it's pre-filled
   const firstAddress = summary.addresses[0];
   const [savedId, setSavedId] = useState(firstAddress?.id ?? NEW_ADDRESS);
   const [values, setValues] = useState<FormValues>({
@@ -136,8 +135,6 @@ export function CheckoutForm({ summary }: { summary: Summary }) {
 
   const placeOrder = api.checkout.placeOrder.useMutation({
     onSuccess: ({ orderNumber }) => {
-      // The bag is empty now, so the header count has to refresh. Not awaited:
-      // a failed refresh must never look like a failed order.
       void utils.bag.count.invalidate();
       void utils.bag.get.invalidate();
       router.push(`/checkout/success?order=${orderNumber}`);
@@ -145,13 +142,11 @@ export function CheckoutForm({ summary }: { summary: Summary }) {
     onError: (error) => {
       if (error.data?.code === "PAYMENT_REQUIRED")
         setPaymentError(error.message);
-      // The form checks the same rules first, so this only happens if they drift
       else if (error.data?.zodError) setBanner("Some details are invalid.");
       else setBanner(error.message);
     },
   });
 
-  // Stays disabled after success too, until the page changes
   const busy = placeOrder.isPending || placeOrder.isSuccess;
 
   function setField<K extends keyof FormValues>(key: K, value: FormValues[K]) {
@@ -161,7 +156,6 @@ export function CheckoutForm({ summary }: { summary: Summary }) {
     );
   }
 
-  // Editing any address field means it's no longer the saved address
   function setAddressField(
     key:
       | "fullName"
@@ -213,7 +207,6 @@ export function CheckoutForm({ summary }: { summary: Summary }) {
         province: values.province,
         postalCode: values.postalCode,
       },
-      // A saved address is already saved
       saveAddress: savedId === NEW_ADDRESS && values.saveAddress,
       delivery: values.delivery,
       payment:
@@ -241,7 +234,6 @@ export function CheckoutForm({ summary }: { summary: Summary }) {
         onSubmit={submit}
         className="min-w-0 flex-1"
       >
-        {/* A disabled fieldset locks every input while the order is sent */}
         <fieldset
           disabled={busy}
           className="m-0 flex min-w-0 flex-col gap-9 border-0 p-0"
