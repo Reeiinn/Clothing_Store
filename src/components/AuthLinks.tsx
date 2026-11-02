@@ -13,13 +13,8 @@ export function AuthLinks() {
       : `?callbackUrl=${encodeURIComponent(current)}`;
 
   return (
-    <>
-      <Link href={`/login${query}`} className="hover:underline">
-        Sign in
-      </Link>
-      <Link href={`/signup${query}`} className="hover:underline">
-        Sign up
-      </Link>
-    </>
+    <Link href={`/login${query}`} className="hover:underline">
+      Sign in
+    </Link>
   );
 }
