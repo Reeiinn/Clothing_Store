@@ -13,6 +13,8 @@ import { SizeChip } from "~/components/SizeChip";
 import { type SizeCode } from "~/lib/constants";
 import { cx } from "~/lib/cx";
 import { formatPrice } from "~/lib/format";
+import { stockStatus } from "~/lib/stock";
+import { deliveryOptions } from "~/server/shipping";
 import { api, type RouterOutputs } from "~/trpc/react";
 
 import { SizeGuide } from "./SizeGuide";
@@ -25,7 +27,8 @@ const genders = {
   UNISEX: { label: "Unisex", param: undefined },
 } as const;
 
-const SHIPPING_TIME = "Ships in 2–4 business days";
+const standard = deliveryOptions[0];
+const SHIPPING_TIME = `Ships in ${standard.minDays}–${standard.maxDays} business days`;
 
 export function ProductView({
   product,
@@ -105,20 +108,23 @@ export function ProductView({
     { label: product.name },
   );
 
-  const status =
-    stock === 0
-      ? { dot: "bg-danger", title: `Sold out in ${label}`, detail: undefined }
-      : stock <= threshold
-        ? {
-            dot: "bg-warn",
-            title: `Only ${stock} left in ${label}`,
-            detail: SHIPPING_TIME,
-          }
-        : {
-            dot: "bg-ok",
-            title: "In stock",
-            detail: `${label} · ${SHIPPING_TIME}`,
-          };
+  const status = {
+    SOLD_OUT: {
+      dot: "bg-danger",
+      title: `Sold out in ${label}`,
+      detail: undefined,
+    },
+    LOW: {
+      dot: "bg-warn",
+      title: `Only ${stock} left in ${label}`,
+      detail: SHIPPING_TIME,
+    },
+    OK: {
+      dot: "bg-ok",
+      title: "In stock",
+      detail: `${label} · ${SHIPPING_TIME}`,
+    },
+  }[stockStatus(stock, threshold)];
 
   return (
     <div>
@@ -305,12 +311,12 @@ export function ProductView({
                   {product.sizes.map((s) => {
                     const v = variantOf(c.name, s);
                     if (!v) return <td key={s} />;
-                    const text =
-                      v.stock === 0
-                        ? "Sold out"
-                        : v.stock <= threshold
-                          ? `${v.stock} left`
-                          : "In stock";
+                    const level = stockStatus(v.stock, threshold);
+                    const text = {
+                      SOLD_OUT: "Sold out",
+                      LOW: `${v.stock} left`,
+                      OK: "In stock",
+                    }[level];
                     const picked = c.name === color && s === size;
                     return (
                       <td key={s} className="p-1.5">
@@ -321,14 +327,14 @@ export function ProductView({
                           onClick={() => select(c.name, s)}
                           className={cx(
                             "h-10 w-full border font-mono text-xs transition-colors",
-                            v.stock === 0
-                              ? "bg-line/60 text-muted"
-                              : v.stock <= threshold
-                                ? "bg-placeholder"
-                                : "bg-white",
+                            {
+                              SOLD_OUT: "bg-line/60 text-muted",
+                              LOW: "bg-placeholder",
+                              OK: "bg-white",
+                            }[level],
                             picked
                               ? "border-ink border-2"
-                              : v.stock > threshold
+                              : level === "OK"
                                 ? "border-line hover:border-ink"
                                 : "hover:border-ink border-transparent",
                           )}

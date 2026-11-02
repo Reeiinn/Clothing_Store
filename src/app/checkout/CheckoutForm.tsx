@@ -14,8 +14,6 @@ import {
   firstInvalidField,
   formatCardNumber,
   formatExpiry,
-  parseServerErrors,
-  stockConflictText,
   validate,
   type FieldErrors,
   type FormValues,
@@ -24,8 +22,6 @@ import {
 type Summary = RouterOutputs["checkout"]["summary"];
 type SavedAddress = Summary["addresses"][number];
 type DeliveryOption = Summary["deliveryOptions"][number];
-
-type Banner = { text: string; backToBag: boolean };
 
 const NEW_ADDRESS = "new";
 
@@ -124,11 +120,9 @@ export function CheckoutForm({ summary }: { summary: Summary }) {
     cvc: "",
   });
   const [errors, setErrors] = useState<FieldErrors>({});
-  const [banner, setBanner] = useState<Banner | null>(null);
+  const [banner, setBanner] = useState<string | null>(null);
   const [paymentError, setPaymentError] = useState<string | null>(null);
 
-  // A ref flips instantly, so a fast double-click can't slip past isPending
-  const submitting = useRef(false);
   const bannerRef = useRef<HTMLDivElement>(null);
   const paymentErrorRef = useRef<HTMLParagraphElement>(null);
 
@@ -149,37 +143,16 @@ export function CheckoutForm({ summary }: { summary: Summary }) {
       router.push(`/checkout/success?order=${orderNumber}`);
     },
     onError: (error) => {
-      submitting.current = false;
-      showServerError(error.message, error.data?.code);
+      if (error.data?.code === "PAYMENT_REQUIRED")
+        setPaymentError(error.message);
+      // The form checks the same rules first, so this only happens if they drift
+      else if (error.data?.zodError) setBanner("Some details are invalid.");
+      else setBanner(error.message);
     },
   });
 
   // Stays disabled after success too, until the page changes
   const busy = placeOrder.isPending || placeOrder.isSuccess;
-
-  function showServerError(message: string, code: string | undefined) {
-    if (code === "CONFLICT") {
-      setBanner({ text: stockConflictText(message), backToBag: true });
-      return;
-    }
-    if (message === "Your bag is empty") {
-      setBanner({ text: "Your bag is empty.", backToBag: true });
-      return;
-    }
-    const fieldErrors = parseServerErrors(message);
-    if (fieldErrors) {
-      setErrors(fieldErrors);
-      const first = firstInvalidField(fieldErrors);
-      if (first) document.getElementById(`field-${first}`)?.focus();
-      return;
-    }
-    // "Your card was declined", "Use a test card number"
-    if (/card/i.test(message)) {
-      setPaymentError(message);
-      return;
-    }
-    setBanner({ text: message, backToBag: false });
-  }
 
   function setField<K extends keyof FormValues>(key: K, value: FormValues[K]) {
     setValues((current) => ({ ...current, [key]: value }));
@@ -217,7 +190,7 @@ export function CheckoutForm({ summary }: { summary: Summary }) {
 
   function submit(event: React.FormEvent) {
     event.preventDefault();
-    if (submitting.current || busy) return;
+    if (busy) return;
 
     setBanner(null);
     setPaymentError(null);
@@ -230,7 +203,6 @@ export function CheckoutForm({ summary }: { summary: Summary }) {
       return;
     }
 
-    submitting.current = true;
     placeOrder.mutate({
       address: {
         fullName: values.fullName,
@@ -280,15 +252,13 @@ export function CheckoutForm({ summary }: { summary: Summary }) {
               role="alert"
               className="border-danger bg-danger-bg text-danger flex flex-wrap items-center justify-between gap-3 border p-4 text-sm"
             >
-              <p className="font-medium">{banner.text}</p>
-              {banner.backToBag && (
-                <Link
-                  href="/bag"
-                  className="font-medium underline underline-offset-2"
-                >
-                  Back to bag
-                </Link>
-              )}
+              <p className="font-medium">{banner}</p>
+              <Link
+                href="/bag"
+                className="font-medium underline underline-offset-2"
+              >
+                Back to bag
+              </Link>
             </div>
           )}
 

@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import type { Prisma } from "../../../../generated/prisma";
 import { SIZES } from "~/lib/constants";
+import { stockStatus } from "~/lib/stock";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 import { getLowStockThreshold } from "~/server/settings";
 
@@ -118,19 +119,13 @@ export const productRouter = createTRPCRouter({
         ];
         const sizes = SIZES.filter((s) => variants.some((v) => v.size === s));
         const totalStock = variants.reduce((sum, v) => sum + v.stock, 0);
-        const stockFlag: "IN_STOCK" | "LOW_STOCK" | "SOLD_OUT" =
-          totalStock === 0
-            ? "SOLD_OUT"
-            : totalStock <= threshold
-              ? "LOW_STOCK"
-              : "IN_STOCK";
         return {
           ...product,
           colors,
           sizeRange: sizes.length
             ? { min: sizes[0]!, max: sizes[sizes.length - 1]! }
             : null,
-          stockFlag,
+          stockFlag: stockStatus(totalStock, threshold),
         };
       });
 

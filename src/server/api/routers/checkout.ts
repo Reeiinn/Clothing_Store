@@ -1,6 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
+import { lineWarning } from "~/lib/stock";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { deliveryOptions } from "~/server/shipping";
 import { getLowStockThreshold } from "~/server/settings";
@@ -71,14 +72,14 @@ function confirmSimulatedPayment(payment: z.infer<typeof paymentSchema>) {
 
   if (payment.cardNumber === "4000000000000002") {
     throw new TRPCError({
-      code: "BAD_REQUEST",
+      code: "PAYMENT_REQUIRED",
       message: "Your card was declined",
     });
   }
 
   if (payment.cardNumber !== "4242424242424242") {
     throw new TRPCError({
-      code: "BAD_REQUEST",
+      code: "PAYMENT_REQUIRED",
       message: "Use a test card number",
     });
   }
@@ -122,15 +123,12 @@ export const checkoutRouter = createTRPCRouter({
     ]);
 
     const items = rows.map(({ variant, ...row }) => {
-      const label = `${variant.color.name} / ${variant.size}`;
-      const warning =
-        variant.stock === 0
-          ? "Sold out"
-          : row.quantity > variant.stock
-            ? `Only ${variant.stock} available, please lower the quantity`
-            : variant.stock <= threshold
-              ? `Only ${variant.stock} left in ${label}`
-              : null;
+      const warning = lineWarning(
+        variant.stock,
+        row.quantity,
+        threshold,
+        `${variant.color.name} / ${variant.size}`,
+      );
 
       return {
         id: row.id,

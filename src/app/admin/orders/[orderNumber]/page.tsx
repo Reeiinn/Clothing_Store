@@ -34,33 +34,20 @@ export default function AdminOrderDetailPage() {
     </Link>
   );
 
-  if (!valid) {
+  if (!valid || orderQuery.isPending || orderQuery.isError) {
+    const problem = valid
+      ? orderQuery.error?.message
+      : "That isn't a valid order number.";
     return (
       <div className="flex flex-col gap-4">
         {back}
-        <p role="alert" className="text-danger text-sm">
-          That isn&apos;t a valid order number.
-        </p>
-      </div>
-    );
-  }
-
-  if (orderQuery.isPending) {
-    return (
-      <div className="flex flex-col gap-4">
-        {back}
-        <p className="text-muted text-sm">Loading order…</p>
-      </div>
-    );
-  }
-
-  if (orderQuery.isError) {
-    return (
-      <div className="flex flex-col gap-4">
-        {back}
-        <p role="alert" className="text-danger text-sm">
-          {orderQuery.error.message}
-        </p>
+        {problem ? (
+          <p role="alert" className="text-danger text-sm">
+            {problem}
+          </p>
+        ) : (
+          <p className="text-muted text-sm">Loading order…</p>
+        )}
       </div>
     );
   }
@@ -83,15 +70,12 @@ export default function AdminOrderDetailPage() {
           </p>
           {order.trackingNumber && (
             <p className="text-sm">
-              Tracking number: <span className="font-mono">{order.trackingNumber}</span>
+              Tracking number:{" "}
+              <span className="font-mono">{order.trackingNumber}</span>
             </p>
           )}
         </div>
-        <OrderActions
-          orderId={order.id}
-          orderNumber={order.number}
-          status={order.status}
-        />
+        <OrderActions orderNumber={order.number} status={order.status} />
       </div>
 
       <section className="flex flex-col gap-3">
@@ -112,7 +96,8 @@ export default function AdminOrderDetailPage() {
                 <tr key={item.id} className="border-line border-b">
                   <td className={`${td} font-medium`}>{item.productName}</td>
                   <td className={td}>
-                    {item.colorName} / <span className="font-mono">{item.size}</span>
+                    {item.colorName} /{" "}
+                    <span className="font-mono">{item.size}</span>
                   </td>
                   <td className={`${td} text-right font-mono`}>
                     {item.quantity}

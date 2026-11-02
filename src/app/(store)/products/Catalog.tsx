@@ -23,8 +23,8 @@ const sortOptions = [
 const genderLabel = { men: "Men's", women: "Women's" } as const;
 
 const tags = {
-  IN_STOCK: undefined,
-  LOW_STOCK: "LOW STOCK",
+  OK: undefined,
+  LOW: "LOW STOCK",
   SOLD_OUT: "SOLD OUT",
 } as const;
 

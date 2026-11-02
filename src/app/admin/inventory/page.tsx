@@ -26,21 +26,24 @@ export default function AdminInventoryPage() {
   const [selectedProductId, setSelectedProductId] = useState<string>();
 
   const stats = api.inventory.stats.useQuery();
+  const threshold = api.inventory.getThreshold.useQuery();
   const alerts = api.inventory.alerts.useQuery(
     { filter, page, pageSize: PAGE_SIZE },
     { placeholderData: keepPreviousData },
   );
-  // With no product picked, the server defaults to the first alert's product.
-  const grid = api.inventory.variantGrid.useQuery({
-    productId: selectedProductId,
-  });
+  // With no product picked, show the first alert's product
+  const productId = selectedProductId ?? alerts.data?.rows[0]?.productId;
+  const grid = api.inventory.variantMatrix.useQuery(
+    { productId: productId ?? "" },
+    { enabled: !!productId },
+  );
 
   // After a restock the last row of a page can disappear; step back a page.
   useEffect(() => {
     if (
       alerts.data &&
       !alerts.isPlaceholderData &&
-      alerts.data.items.length === 0 &&
+      alerts.data.rows.length === 0 &&
       page > 1
     ) {
       setPage((current) => current - 1);
@@ -61,7 +64,7 @@ export default function AdminInventoryPage() {
             Low-stock alerts for every size and color
           </p>
         </div>
-        <ThresholdControl current={stats.data?.threshold ?? 3} />
+        <ThresholdControl current={threshold.data?.threshold ?? 3} />
       </div>
 
       {stats.isError && (
@@ -88,13 +91,13 @@ export default function AdminInventoryPage() {
           </p>
         )}
         <AlertsTable
-          items={alerts.data?.items ?? []}
+          items={alerts.data?.rows ?? []}
           total={alerts.data?.total ?? 0}
           page={page}
           pageSize={PAGE_SIZE}
           filter={filter}
           loading={alerts.isPending}
-          activeProductId={grid.data?.productId}
+          activeProductId={productId}
           onSelectProduct={setSelectedProductId}
           onPageChange={setPage}
         />
@@ -106,7 +109,7 @@ export default function AdminInventoryPage() {
             Couldn&apos;t load the stock grid: {grid.error.message}
           </p>
         ) : (
-          <VariantGrid grid={grid.data} loading={grid.isPending} />
+          <VariantGrid grid={grid.data} loading={grid.isLoading} />
         )}
       </section>
     </div>

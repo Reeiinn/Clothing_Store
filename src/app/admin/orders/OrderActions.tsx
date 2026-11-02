@@ -6,14 +6,13 @@ import { Button } from "~/components/Button";
 import { api, type RouterOutputs } from "~/trpc/react";
 import { errorMessage } from "../_components/error-message";
 
-type OrderStatus = RouterOutputs["order"]["adminList"][number]["status"];
+type OrderStatus =
+  RouterOutputs["order"]["adminList"]["orders"][number]["status"];
 
 export function OrderActions({
-  orderId,
   orderNumber,
   status,
 }: {
-  orderId: string;
   orderNumber: number;
   status: OrderStatus;
 }) {
@@ -45,7 +44,7 @@ export function OrderActions({
       return;
     }
     setError(null);
-    update.mutate({ orderId, status: "SHIPPED", trackingNumber: trimmed });
+    update.mutate({ orderNumber, status: "SHIPPED", trackingNumber: trimmed });
   }
 
   return (
@@ -69,7 +68,7 @@ export function OrderActions({
         <Button
           size="sm"
           loading={update.isPending}
-          onClick={() => update.mutate({ orderId, status: "DELIVERED" })}
+          onClick={() => update.mutate({ orderNumber, status: "DELIVERED" })}
         >
           Mark as delivered
         </Button>
@@ -116,7 +115,9 @@ export function OrderActions({
             <Button
               size="sm"
               loading={update.isPending}
-              onClick={() => update.mutate({ orderId, status: "CANCELLED" })}
+              onClick={() =>
+                update.mutate({ orderNumber, status: "CANCELLED" })
+              }
             >
               Yes, cancel order
             </Button>
