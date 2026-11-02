@@ -6,6 +6,7 @@ import { useParams } from "next/navigation";
 import { api } from "~/trpc/react";
 import { errorMessage } from "../../_components/error-message";
 import { ProductForm } from "../ProductForm";
+import { RemoveProduct } from "./RemoveProduct";
 
 export default function EditProductPage() {
   const { id } = useParams<{ id: string }>();
@@ -29,7 +30,14 @@ export default function EditProductPage() {
 
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="flex flex-col gap-1.5">
-          <h1 className="text-3xl font-semibold">Edit product</h1>
+          <h1 className="flex flex-wrap items-center gap-3 text-3xl font-semibold">
+            Edit product
+            {product.data?.hidden && (
+              <span className="bg-placeholder text-muted px-2 py-0.5 font-mono text-xs font-normal">
+                HIDDEN FROM STORE
+              </span>
+            )}
+          </h1>
           <p className="text-muted text-sm">
             Changes show in the store as soon as you save.
           </p>
@@ -68,6 +76,8 @@ export default function EditProductPage() {
           Changes saved.
         </p>
       )}
+
+      {product.data && <RemoveProduct product={product.data} />}
     </div>
   );
 }

@@ -233,7 +233,11 @@ export const inventoryRouter = createTRPCRouter({
           gender: true,
           priceCents: true,
           imageUrl: true,
+          hidden: true,
           category: { select: { slug: true } },
+          _count: {
+            select: { variants: { where: { orderItems: { some: {} } } } },
+          },
         },
       });
       if (!product) {
@@ -242,7 +246,8 @@ export const inventoryRouter = createTRPCRouter({
           message: "Product not found.",
         });
       }
-      return product;
+      const { _count, ...rest } = product;
+      return { ...rest, ordered: _count.variants > 0 };
     }),
 
   updateProduct: adminProcedure
@@ -275,6 +280,33 @@ export const inventoryRouter = createTRPCRouter({
       return { id: input.id };
     }),
 
+  setHidden: adminProcedure
+    .input(z.object({ id: z.string().min(1), hidden: z.boolean() }))
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db.product.update({
+        where: { id: input.id },
+        data: { hidden: input.hidden },
+      });
+      return { id: input.id, hidden: input.hidden };
+    }),
+
+  deleteProduct: adminProcedure
+    .input(z.object({ id: z.string().min(1) }))
+    .mutation(async ({ ctx, input }) => {
+      const ordered = await ctx.db.orderItem.count({
+        where: { variant: { productId: input.id } },
+      });
+      if (ordered > 0) {
+        throw new TRPCError({
+          code: "CONFLICT",
+          message:
+            "This product has orders, so it can't be deleted. Hide it instead.",
+        });
+      }
+      await ctx.db.product.delete({ where: { id: input.id } });
+      return { id: input.id };
+    }),
+
   products: adminProcedure.query(async ({ ctx }) => {
     const threshold = await getLowStockThreshold(ctx.db);
     const products = await ctx.db.product.findMany({
@@ -285,6 +317,7 @@ export const inventoryRouter = createTRPCRouter({
         imageUrl: true,
         priceCents: true,
         gender: true,
+        hidden: true,
         category: { select: { name: true } },
         variants: {
           select: {
@@ -304,6 +337,7 @@ export const inventoryRouter = createTRPCRouter({
         imageUrl: product.imageUrl,
         priceCents: product.priceCents,
         gender: product.gender,
+        hidden: product.hidden,
         category: product.category.name,
         sizes: SIZES.filter((size) =>
           product.variants.some((variant) => variant.size === size),

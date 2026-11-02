@@ -117,6 +117,7 @@ export default function AdminInventoryPage() {
                       <span className="text-muted text-xs">
                         {product.category} · {product.colors.length}{" "}
                         {product.colors.length === 1 ? "color" : "colors"}
+                        {product.hidden && " · Hidden from store"}
                       </span>
                     </span>
                   </span>

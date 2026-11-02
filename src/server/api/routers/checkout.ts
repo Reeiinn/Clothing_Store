@@ -188,7 +188,9 @@ export const checkoutRouter = createTRPCRouter({
                 size: true,
                 stock: true,
                 color: { select: { name: true } },
-                product: { select: { name: true, priceCents: true } },
+                product: {
+                  select: { name: true, priceCents: true, hidden: true },
+                },
               },
             },
           },
@@ -198,6 +200,14 @@ export const checkoutRouter = createTRPCRouter({
           throw new TRPCError({
             code: "BAD_REQUEST",
             message: "Your bag is empty",
+          });
+        }
+
+        const unavailable = items.find((item) => item.variant.product.hidden);
+        if (unavailable) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: `${unavailable.variant.product.name} is no longer available, please remove it from your bag`,
           });
         }
 
