@@ -1,12 +1,13 @@
 import Link from "next/link";
 
-import { ImagePlaceholder } from "~/components/ImagePlaceholder";
+import { ProductImage } from "~/components/ProductImage";
 import { formatPrice } from "~/lib/format";
 
 type ProductCardProps = {
   slug: string;
   name: string;
   priceCents: number;
+  imageUrl?: string | null;
   colors: { name: string; hex: string }[];
   sizes: string[];
   tag?: "LOW STOCK" | "SOLD OUT";
@@ -16,6 +17,7 @@ export function ProductCard({
   slug,
   name,
   priceCents,
+  imageUrl,
   colors,
   sizes,
   tag,
@@ -26,7 +28,12 @@ export function ProductCard({
   return (
     <Link href={`/products/${slug}`} className="group block">
       <div className="relative">
-        <ImagePlaceholder className="aspect-[3/4] w-full" />
+        <ProductImage
+          src={imageUrl}
+          alt=""
+          sizes="(min-width: 1024px) 25vw, 50vw"
+          className="aspect-[3/4] w-full"
+        />
         {tag && (
           <span className="bg-paper border-line absolute top-2 left-2 border px-1.5 py-0.5 font-mono text-[11px] tracking-wide">
             {tag}

@@ -227,6 +227,7 @@ async function main() {
         fabric: "100% cotton",
         fitNotes: fitNotes[catSlug],
         priceCents: pesos * 100,
+        imageUrl: `/products/${slugify(name)}.jpg`,
         categoryId: cat[catSlug]!.id,
         createdAt: daysAgo(index),
         variants: {

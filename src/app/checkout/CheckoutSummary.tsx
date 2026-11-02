@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { Button } from "~/components/Button";
-import { ImagePlaceholder } from "~/components/ImagePlaceholder";
+import { ProductImage } from "~/components/ProductImage";
 import { formatPrice } from "~/lib/format";
 import type { RouterOutputs } from "~/trpc/react";
 
@@ -35,8 +35,10 @@ export function CheckoutSummary({
       <ul className="flex flex-col gap-4">
         {items.map((item) => (
           <li key={item.id} className="flex items-start gap-3 text-sm">
-            <ImagePlaceholder
-              label={`${item.name}, ${item.color}`}
+            <ProductImage
+              src={item.imageUrl}
+              alt={`${item.name}, ${item.color}`}
+              sizes="56px"
               className="h-[75px] w-14 shrink-0"
             />
             <div className="flex min-w-0 flex-1 flex-col gap-0.5">

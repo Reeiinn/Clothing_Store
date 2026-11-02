@@ -8,6 +8,7 @@ import { Breadcrumb } from "~/components/Breadcrumb";
 import { Button } from "~/components/Button";
 import { ColorSwatch } from "~/components/ColorSwatch";
 import { ImagePlaceholder } from "~/components/ImagePlaceholder";
+import { ProductImage } from "~/components/ProductImage";
 import { QuantityStepper } from "~/components/QuantityStepper";
 import { SizeChip } from "~/components/SizeChip";
 import { type SizeCode } from "~/lib/constants";
@@ -132,16 +133,27 @@ export function ProductView({
 
       <div className="mt-8 grid gap-10 lg:grid-cols-2 lg:gap-12">
         <div className="relative">
-          <ImagePlaceholder
-            label={`Photo · ${color}`}
-            className="aspect-[4/5] w-full"
-          />
-          <span
-            aria-hidden
-            className="bg-paper border-ink absolute bottom-4 left-4 border px-2 py-1 font-mono text-xs"
-          >
-            Photo · {color}
-          </span>
+          {product.imageUrl ? (
+            <ProductImage
+              src={product.imageUrl}
+              alt={product.name}
+              sizes="(min-width: 1024px) 50vw, 100vw"
+              className="aspect-[4/5] w-full"
+            />
+          ) : (
+            <>
+              <ImagePlaceholder
+                label={`Photo · ${color}`}
+                className="aspect-[4/5] w-full"
+              />
+              <span
+                aria-hidden
+                className="bg-paper border-ink absolute bottom-4 left-4 border px-2 py-1 font-mono text-xs"
+              >
+                Photo · {color}
+              </span>
+            </>
+          )}
         </div>
 
         <div>

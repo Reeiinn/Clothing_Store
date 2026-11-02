@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 import { Button } from "~/components/Button";
-import { ImagePlaceholder } from "~/components/ImagePlaceholder";
+import { ProductImage } from "~/components/ProductImage";
 import { StatusBadge } from "~/components/StatusBadge";
 import { cx } from "~/lib/cx";
 import { formatDate, formatDateTime, formatPrice } from "~/lib/format";
@@ -74,8 +74,10 @@ export function OrderTracking({
               <ul className="flex flex-col gap-3">
                 {data.items.map((item) => (
                   <li key={item.id} className="flex items-center gap-4">
-                    <ImagePlaceholder
-                      label={`${item.productName}, ${item.colorName}`}
+                    <ProductImage
+                      src={item.variant.product.imageUrl}
+                      alt={`${item.productName}, ${item.colorName}`}
+                      sizes="56px"
                       className="h-[75px] w-14 shrink-0"
                     />
                     <div className="flex min-w-0 flex-1 flex-col gap-0.5">
