@@ -1,7 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
-import { Size, type Prisma } from "../../../../generated/prisma";
+import { Gender, Size, type Prisma } from "../../../../generated/prisma";
 import { SIZES } from "~/lib/constants";
 import { stockStatus } from "~/lib/stock";
 import { adminProcedure, createTRPCRouter } from "~/server/api/trpc";
@@ -13,7 +13,7 @@ const productFields = z.object({
   name: z.string().trim().min(1, "Enter a product name.").max(100),
   description: z.string().trim().min(1, "Enter a description."),
   categorySlug: z.string().min(1, "Pick a category."),
-  gender: z.enum(["MEN", "WOMEN", "UNISEX"]),
+  gender: z.nativeEnum(Gender),
   priceCents: z.number().int().min(1, "Enter a price."),
   image: z
     .object({
@@ -77,10 +77,7 @@ export const inventoryRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const variant = await ctx.db.variant.update({
         where: { id: input.variantId },
-        data: {
-          stock: input.stock,
-          ...(input.stock > 0 ? { restockRequestedAt: null } : {}),
-        },
+        data: { stock: input.stock },
         select: { id: true, stock: true },
       });
 

@@ -1,48 +1,24 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
+import { OrderStatus } from "../../../../generated/prisma";
 import {
   adminProcedure,
   createTRPCRouter,
   protectedProcedure,
 } from "~/server/api/trpc";
 import {
+  activeReturnItems,
+  canRequestReturn,
   getReturnWindowEndsAt,
-  isWithinReturnWindow,
 } from "~/server/return-policy";
-import { deliveryOptions } from "~/server/shipping";
+import { withTotal } from "~/server/order-total";
+import { deliveryOption } from "~/server/shipping";
+import { restock } from "~/server/stock";
 
-const orderStatusSchema = z.enum([
-  "PROCESSING",
-  "SHIPPED",
-  "DELIVERED",
-  "CANCELLED",
-]);
+const orderStatusSchema = z.nativeEnum(OrderStatus);
 
 const pageSize = 20;
-
-function canReturnOrder(
-  status: string,
-  deliveredAt: Date | null,
-  items: {
-    quantity: number;
-    returnItems: { quantity: number }[];
-  }[],
-) {
-  return (
-    status === "DELIVERED" &&
-    isWithinReturnWindow(deliveredAt) &&
-    items.some(
-      (item) =>
-        item.quantity -
-          item.returnItems.reduce(
-            (sum, returnedItem) => sum + returnedItem.quantity,
-            0,
-          ) >
-        0,
-    )
-  );
-}
 
 export const orderRouter = createTRPCRouter({
   listMine: protectedProcedure
@@ -58,17 +34,13 @@ export const orderRouter = createTRPCRouter({
           number: true,
           createdAt: true,
           status: true,
-          totalCents: true,
+          subtotalCents: true,
+          shippingCents: true,
           deliveredAt: true,
           items: {
             select: {
               quantity: true,
-              returnItems: {
-                where: {
-                  returnRequest: { status: { not: "REJECTED" } },
-                },
-                select: { quantity: true },
-              },
+              returnItems: activeReturnItems,
             },
           },
         },
@@ -79,12 +51,8 @@ export const orderRouter = createTRPCRouter({
         createdAt: order.createdAt,
         status: order.status,
         itemCount: order.items.reduce((sum, item) => sum + item.quantity, 0),
-        totalCents: order.totalCents,
-        canRequestReturn: canReturnOrder(
-          order.status,
-          order.deliveredAt,
-          order.items,
-        ),
+        totalCents: withTotal(order).totalCents,
+        canRequestReturn: canRequestReturn(order),
       }));
     }),
 
@@ -100,12 +68,7 @@ export const orderRouter = createTRPCRouter({
           items: {
             include: {
               variant: { select: { product: { select: { imageUrl: true } } } },
-              returnItems: {
-                where: {
-                  returnRequest: { status: { not: "REJECTED" } },
-                },
-                select: { quantity: true },
-              },
+              returnItems: activeReturnItems,
             },
           },
           history: { orderBy: { createdAt: "desc" } },
@@ -116,21 +79,14 @@ export const orderRouter = createTRPCRouter({
         throw new TRPCError({ code: "NOT_FOUND", message: "Order not found." });
       }
 
-      const maxDays =
-        order.shippingMethod === "STANDARD"
-          ? deliveryOptions[0].maxDays
-          : deliveryOptions[1].days;
+      const { maxDays } = deliveryOption(order.shippingMethod);
 
       return {
-        ...order,
+        ...withTotal(order),
         estimatedDelivery: new Date(
           order.createdAt.getTime() + maxDays * 24 * 60 * 60 * 1000,
         ),
-        canRequestReturn: canReturnOrder(
-          order.status,
-          order.deliveredAt,
-          order.items,
-        ),
+        canRequestReturn: canRequestReturn(order),
         returnWindowEndsAt: getReturnWindowEndsAt(order.deliveredAt),
       };
     }),
@@ -174,12 +130,7 @@ export const orderRouter = createTRPCRouter({
           });
         }
 
-        for (const item of order.items) {
-          await tx.variant.update({
-            where: { id: item.variantId },
-            data: { stock: { increment: item.quantity } },
-          });
-        }
+        await restock(tx, order.items);
 
         await tx.orderStatusHistory.create({
           data: {
@@ -211,7 +162,8 @@ export const orderRouter = createTRPCRouter({
           select: {
             number: true,
             status: true,
-            totalCents: true,
+            subtotalCents: true,
+            shippingCents: true,
             createdAt: true,
             user: { select: { name: true, email: true } },
             items: { select: { quantity: true } },
@@ -220,7 +172,12 @@ export const orderRouter = createTRPCRouter({
         ctx.db.order.count({ where }),
       ]);
 
-      return { orders, total, page: input.page, pageSize };
+      return {
+        orders: orders.map(withTotal),
+        total,
+        page: input.page,
+        pageSize,
+      };
     }),
 
   adminGet: adminProcedure
@@ -239,7 +196,7 @@ export const orderRouter = createTRPCRouter({
         throw new TRPCError({ code: "NOT_FOUND", message: "Order not found." });
       }
 
-      return order;
+      return withTotal(order);
     }),
 
   updateStatus: adminProcedure
@@ -308,14 +265,7 @@ export const orderRouter = createTRPCRouter({
           });
         }
 
-        if (input.status === "CANCELLED") {
-          for (const item of order.items) {
-            await tx.variant.update({
-              where: { id: item.variantId },
-              data: { stock: { increment: item.quantity } },
-            });
-          }
-        }
+        if (input.status === "CANCELLED") await restock(tx, order.items);
 
         const statusNote =
           input.status === "SHIPPED"
@@ -328,9 +278,7 @@ export const orderRouter = createTRPCRouter({
           data: {
             orderId: order.id,
             status: input.status,
-            note: input.note
-              ? `${statusNote} · ${input.note}`
-              : statusNote,
+            note: input.note ? `${statusNote} · ${input.note}` : statusNote,
           },
         });
       });

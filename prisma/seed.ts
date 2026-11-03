@@ -301,7 +301,6 @@ async function main() {
         status: o.status,
         subtotalCents,
         shippingCents,
-        totalCents: subtotalCents + shippingCents,
         shippingMethod: o.shippingMethod,
         paymentMethod: o.paymentMethod,
         cardLast4: o.paymentMethod === "CARD" ? "4242" : null,

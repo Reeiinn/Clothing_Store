@@ -38,8 +38,8 @@ function addressValues(address: SavedAddress | undefined) {
 }
 
 function deliveryTime(option: DeliveryOption) {
-  return "days" in option
-    ? `${option.days} business days`
+  return option.minDays === option.maxDays
+    ? `${option.maxDays} business days`
     : `${option.minDays}–${option.maxDays} business days`;
 }
 
