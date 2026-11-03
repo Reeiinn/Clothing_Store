@@ -1,5 +1,6 @@
 import { stockStatus } from "~/lib/stock";
 import { adminProcedure, createTRPCRouter } from "~/server/api/trpc";
+import { withTotal } from "~/server/order-total";
 import { getLowStockThreshold } from "~/server/settings";
 
 export const dashboardRouter = createTRPCRouter({
@@ -25,7 +26,7 @@ export const dashboardRouter = createTRPCRouter({
       ctx.db.variant.count({ where: { stock: { gte: 1, lte: threshold } } }),
       ctx.db.order.aggregate({
         where: { createdAt: { gte: monthStart }, status: { not: "CANCELLED" } },
-        _sum: { totalCents: true },
+        _sum: { subtotalCents: true, shippingCents: true },
       }),
       ctx.db.order.findMany({
         orderBy: { createdAt: "desc" },
@@ -33,7 +34,8 @@ export const dashboardRouter = createTRPCRouter({
         select: {
           number: true,
           status: true,
-          totalCents: true,
+          subtotalCents: true,
+          shippingCents: true,
           createdAt: true,
           user: { select: { name: true, email: true } },
         },
@@ -57,8 +59,9 @@ export const dashboardRouter = createTRPCRouter({
       openReturns,
       soldOutCount,
       lowStockCount,
-      salesThisMonthCents: sales._sum.totalCents ?? 0,
-      recentOrders,
+      salesThisMonthCents:
+        (sales._sum.subtotalCents ?? 0) + (sales._sum.shippingCents ?? 0),
+      recentOrders: recentOrders.map(withTotal),
       needsStock: needsStock.map((variant) => ({
         variantId: variant.id,
         productId: variant.product.id,

@@ -1,31 +1,21 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
+import { ReturnReason, ReturnStatus } from "../../../../generated/prisma";
 import {
   adminProcedure,
   createTRPCRouter,
   protectedProcedure,
 } from "~/server/api/trpc";
 import {
+  activeReturnItems,
   getReturnWindowEndsAt,
-  isWithinReturnWindow,
+  returnBlockReason,
+  returnedQty,
 } from "~/server/return-policy";
+import { restock } from "~/server/stock";
 
-const returnReasonSchema = z.enum([
-  "SIZE_DIDNT_FIT",
-  "NOT_AS_PICTURED",
-  "DAMAGED",
-  "WRONG_ITEM",
-  "CHANGED_MIND",
-  "OTHER",
-]);
-
-const returnStatusSchema = z.enum([
-  "REQUESTED",
-  "APPROVED",
-  "RECEIVED",
-  "REJECTED",
-]);
+const returnStatusSchema = z.nativeEnum(ReturnStatus);
 
 const pageSize = 20;
 
@@ -47,12 +37,7 @@ export const returnsRouter = createTRPCRouter({
               size: true,
               quantity: true,
               variant: { select: { product: { select: { imageUrl: true } } } },
-              returnItems: {
-                where: {
-                  returnRequest: { status: { not: "REJECTED" } },
-                },
-                select: { quantity: true },
-              },
+              returnItems: activeReturnItems,
             },
           },
         },
@@ -63,11 +48,7 @@ export const returnsRouter = createTRPCRouter({
       }
 
       const items = order.items.map((item) => {
-        const alreadyReturnedQty = item.returnItems.reduce(
-          (sum, returned) => sum + returned.quantity,
-          0,
-        );
-
+        const alreadyReturnedQty = returnedQty(item);
         return {
           orderItemId: item.id,
           productName: item.productName,
@@ -80,22 +61,14 @@ export const returnsRouter = createTRPCRouter({
         };
       });
 
-      const withinWindow = isWithinReturnWindow(order.deliveredAt);
-      const eligible =
-        order.status === "DELIVERED" &&
-        withinWindow &&
-        items.some((item) => item.returnableQty > 0);
-
-      const reason = !eligible
-        ? order.status !== "DELIVERED"
-          ? "Only delivered orders can be returned."
-          : !withinWindow
-            ? "The 30-day return window has expired."
-            : "No items remain eligible for return."
-        : undefined;
+      const reason =
+        returnBlockReason(order) ??
+        (items.some((item) => item.returnableQty > 0)
+          ? undefined
+          : "No items remain eligible for return.");
 
       return {
-        eligible,
+        eligible: !reason,
         ...(reason ? { reason } : {}),
         returnWindowEndsAt: getReturnWindowEndsAt(order.deliveredAt),
         items,
@@ -111,7 +84,7 @@ export const returnsRouter = createTRPCRouter({
             z.object({
               orderItemId: z.string().min(1),
               quantity: z.number().int().min(1),
-              reason: returnReasonSchema,
+              reason: z.nativeEnum(ReturnReason),
             }),
           )
           .min(1, "Select at least one item to return")
@@ -135,52 +108,33 @@ export const returnsRouter = createTRPCRouter({
           FOR UPDATE
         `;
 
-        if (lockedOrders.length === 0) {
+        if (!lockedOrders[0]) {
           throw new TRPCError({
             code: "NOT_FOUND",
             message: "Order not found.",
           });
         }
 
-        const order = await tx.order.findFirst({
-          where: { number: input.orderNumber, userId },
+        const order = await tx.order.findUniqueOrThrow({
+          where: { id: lockedOrders[0].id },
           include: {
             items: {
               select: {
                 id: true,
                 quantity: true,
                 unitPriceCents: true,
+                returnItems: activeReturnItems,
               },
             },
           },
         });
 
-        if (!order) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "Order not found.",
-          });
-        }
-        if (order.status !== "DELIVERED") {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "Only delivered orders can be returned.",
-          });
-        }
-        if (!isWithinReturnWindow(order.deliveredAt)) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "The 30-day return window has expired.",
-          });
+        const blocked = returnBlockReason(order);
+        if (blocked) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: blocked });
         }
 
         let estimatedRefundCents = 0;
-        const createItems: {
-          orderItemId: string;
-          quantity: number;
-          reason: z.infer<typeof returnReasonSchema>;
-        }[] = [];
-
         for (const requested of input.items) {
           const orderItem = order.items.find(
             (item) => item.id === requested.orderItemId,
@@ -193,16 +147,7 @@ export const returnsRouter = createTRPCRouter({
             });
           }
 
-          const returned = await tx.returnItem.aggregate({
-            where: {
-              orderItemId: orderItem.id,
-              returnRequest: { status: { not: "REJECTED" } },
-            },
-            _sum: { quantity: true },
-          });
-          const returnableQty =
-            orderItem.quantity - (returned._sum.quantity ?? 0);
-
+          const returnableQty = orderItem.quantity - returnedQty(orderItem);
           if (requested.quantity > returnableQty) {
             throw new TRPCError({
               code: "BAD_REQUEST",
@@ -210,21 +155,14 @@ export const returnsRouter = createTRPCRouter({
             });
           }
 
-          estimatedRefundCents +=
-            orderItem.unitPriceCents * requested.quantity;
-          createItems.push({
-            orderItemId: orderItem.id,
-            quantity: requested.quantity,
-            reason: requested.reason,
-          });
+          estimatedRefundCents += orderItem.unitPriceCents * requested.quantity;
         }
 
         const request = await tx.returnRequest.create({
           data: {
             orderId: order.id,
-            userId,
             note: input.note,
-            items: { create: createItems },
+            items: { create: input.items },
           },
           select: { id: true },
         });
@@ -235,7 +173,7 @@ export const returnsRouter = createTRPCRouter({
 
   listMine: protectedProcedure.query(async ({ ctx }) => {
     return ctx.db.returnRequest.findMany({
-      where: { userId: ctx.session.user.id },
+      where: { order: { userId: ctx.session.user.id } },
       orderBy: { createdAt: "desc" },
       include: {
         order: { select: { number: true } },
@@ -277,7 +215,6 @@ export const returnsRouter = createTRPCRouter({
                 user: { select: { name: true, email: true } },
               },
             },
-            user: { select: { name: true, email: true } },
             items: {
               include: {
                 orderItem: {
@@ -351,12 +288,13 @@ export const returnsRouter = createTRPCRouter({
         }
 
         if (input.status === "RECEIVED") {
-          for (const item of request.items) {
-            await tx.variant.update({
-              where: { id: item.orderItem.variantId },
-              data: { stock: { increment: item.quantity } },
-            });
-          }
+          await restock(
+            tx,
+            request.items.map((item) => ({
+              variantId: item.orderItem.variantId,
+              quantity: item.quantity,
+            })),
+          );
         }
       });
 

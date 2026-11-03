@@ -2,13 +2,12 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 import type { PrismaClient } from "../../../../generated/prisma";
-import { lineWarning } from "~/lib/stock";
 import {
   createTRPCRouter,
   protectedProcedure,
   publicProcedure,
 } from "~/server/api/trpc";
-import { getLowStockThreshold } from "~/server/settings";
+import { bagTotals, getBagLines } from "~/server/bag";
 
 const itemInput = z.object({ itemId: z.string() });
 
@@ -36,66 +35,12 @@ async function findOwnItem(db: PrismaClient, userId: string, itemId: string) {
 
 export const bagRouter = createTRPCRouter({
   get: protectedProcedure.query(async ({ ctx }) => {
-    const [rows, threshold] = await Promise.all([
-      ctx.db.bagItem.findMany({
-        where: { userId: ctx.session.user.id },
-        orderBy: { createdAt: "asc" },
-        select: {
-          id: true,
-          variantId: true,
-          quantity: true,
-          savedForLater: true,
-          variant: {
-            select: {
-              size: true,
-              stock: true,
-              color: { select: { name: true } },
-              product: {
-                select: {
-                  name: true,
-                  slug: true,
-                  imageUrl: true,
-                  priceCents: true,
-                },
-              },
-            },
-          },
-        },
-      }),
-      getLowStockThreshold(ctx.db),
-    ]);
-
-    const lines = rows.map(({ variant, ...row }) => {
-      const { stock } = variant;
-      const warning = lineWarning(
-        stock,
-        row.quantity,
-        threshold,
-        `${variant.color.name} / ${variant.size}`,
-      );
-      return {
-        id: row.id,
-        variantId: row.variantId,
-        savedForLater: row.savedForLater,
-        name: variant.product.name,
-        slug: variant.product.slug,
-        imageUrl: variant.product.imageUrl,
-        size: variant.size,
-        color: variant.color.name,
-        unitPriceCents: variant.product.priceCents,
-        quantity: row.quantity,
-        stock,
-        lineTotalCents: variant.product.priceCents * row.quantity,
-        warning,
-      };
-    });
-
+    const lines = await getBagLines(ctx.db, { userId: ctx.session.user.id });
     const items = lines.filter((l) => !l.savedForLater);
     return {
       items,
       saved: lines.filter((l) => l.savedForLater),
-      itemCount: items.reduce((sum, l) => sum + l.quantity, 0),
-      subtotalCents: items.reduce((sum, l) => sum + l.lineTotalCents, 0),
+      ...bagTotals(items),
     };
   }),
 

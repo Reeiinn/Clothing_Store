@@ -1,13 +1,16 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
-import { lineWarning } from "~/lib/stock";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
-import { deliveryOptions } from "~/server/shipping";
-import { getLowStockThreshold } from "~/server/settings";
+import { bagTotals, getBagLines } from "~/server/bag";
+import { deliveryOption, deliveryOptions } from "~/server/shipping";
 
 const addressSchema = z.object({
-  fullName: z.string().trim().min(1, "Enter the recipient's full name").max(100),
+  fullName: z
+    .string()
+    .trim()
+    .min(1, "Enter the recipient's full name")
+    .max(100),
   phone: z
     .string()
     .trim()
@@ -30,11 +33,7 @@ const cardPaymentSchema = z.object({
       (value) => /^\d{16}$/.test(value),
       "Enter a valid 16-digit card number",
     ),
-  nameOnCard: z
-    .string()
-    .trim()
-    .min(1, "Enter the name on the card")
-    .max(100),
+  nameOnCard: z.string().trim().min(1, "Enter the name on the card").max(100),
   expiry: z
     .string()
     .regex(/^(0[1-9]|1[0-2])\/\d{2}$/, "Enter an expiry in MM/YY format")
@@ -88,75 +87,15 @@ function confirmSimulatedPayment(payment: z.infer<typeof paymentSchema>) {
 export const checkoutRouter = createTRPCRouter({
   summary: protectedProcedure.query(async ({ ctx }) => {
     const userId = ctx.session.user.id;
-
-    const [rows, addresses, threshold] = await Promise.all([
-      ctx.db.bagItem.findMany({
-        where: { userId, savedForLater: false },
-        orderBy: { createdAt: "asc" },
-        select: {
-          id: true,
-          variantId: true,
-          quantity: true,
-          savedForLater: true,
-          variant: {
-            select: {
-              size: true,
-              stock: true,
-              color: { select: { name: true } },
-              product: {
-                select: {
-                  name: true,
-                  slug: true,
-                  imageUrl: true,
-                  priceCents: true,
-                },
-              },
-            },
-          },
-        },
-      }),
+    const [items, addresses] = await Promise.all([
+      getBagLines(ctx.db, { userId, savedForLater: false }),
       ctx.db.address.findMany({
         where: { userId },
         orderBy: [{ isDefault: "desc" }, { id: "asc" }],
       }),
-      getLowStockThreshold(ctx.db),
     ]);
 
-    const items = rows.map(({ variant, ...row }) => {
-      const warning = lineWarning(
-        variant.stock,
-        row.quantity,
-        threshold,
-        `${variant.color.name} / ${variant.size}`,
-      );
-
-      return {
-        id: row.id,
-        variantId: row.variantId,
-        savedForLater: row.savedForLater,
-        name: variant.product.name,
-        slug: variant.product.slug,
-        imageUrl: variant.product.imageUrl,
-        size: variant.size,
-        color: variant.color.name,
-        unitPriceCents: variant.product.priceCents,
-        quantity: row.quantity,
-        stock: variant.stock,
-        lineTotalCents: variant.product.priceCents * row.quantity,
-        warning,
-      };
-    });
-
-    return {
-      items,
-      itemCount: items.reduce((sum, item) => sum + item.quantity, 0),
-      subtotalCents: items.reduce(
-        (sum, item) => sum + item.lineTotalCents,
-        0,
-      ),
-      deliveryOptions,
-      addresses,
-    };
+    return { items, ...bagTotals(items), deliveryOptions, addresses };
   }),
 
   placeOrder: protectedProcedure
@@ -165,10 +104,7 @@ export const checkoutRouter = createTRPCRouter({
       confirmSimulatedPayment(input.payment);
 
       const userId = ctx.session.user.id;
-      const shippingCents =
-        input.delivery === "STANDARD"
-          ? deliveryOptions[0].feeCents
-          : deliveryOptions[1].feeCents;
+      const shippingCents = deliveryOption(input.delivery).feeCents;
 
       const cardLast4 =
         input.payment.method === "CARD"
@@ -235,8 +171,7 @@ export const checkoutRouter = createTRPCRouter({
         }
 
         const subtotalCents = items.reduce(
-          (sum, item) =>
-            sum + item.variant.product.priceCents * item.quantity,
+          (sum, item) => sum + item.variant.product.priceCents * item.quantity,
           0,
         );
 
@@ -246,7 +181,6 @@ export const checkoutRouter = createTRPCRouter({
             status: "PROCESSING",
             subtotalCents,
             shippingCents,
-            totalCents: subtotalCents + shippingCents,
             shippingMethod: input.delivery,
             paymentMethod: input.payment.method,
             cardLast4,

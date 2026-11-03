@@ -155,8 +155,10 @@ export default function AdminReturnsPage() {
                   <StatusBadge status={request.status} />
                 </div>
                 <p className="text-sm">
-                  {request.user.name ?? "Unnamed customer"}{" "}
-                  <span className="text-muted">({request.user.email})</span>
+                  {request.order.user.name ?? "Unnamed customer"}{" "}
+                  <span className="text-muted">
+                    ({request.order.user.email})
+                  </span>
                 </p>
                 <p className="text-muted text-xs">
                   Requested{" "}
