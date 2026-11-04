@@ -1,5 +1,16 @@
 export function withTotal<
-  T extends { subtotalCents: number; shippingCents: number },
+  T extends {
+    shippingCents: number;
+    items: { unitPriceCents: number; quantity: number }[];
+  },
 >(order: T) {
-  return { ...order, totalCents: order.subtotalCents + order.shippingCents };
+  const subtotalCents = order.items.reduce(
+    (sum, item) => sum + item.unitPriceCents * item.quantity,
+    0,
+  );
+  return {
+    ...order,
+    subtotalCents,
+    totalCents: subtotalCents + order.shippingCents,
+  };
 }

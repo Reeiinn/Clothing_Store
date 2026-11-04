@@ -8,6 +8,18 @@ export const activeReturnItems = {
   select: { quantity: true },
 } satisfies Prisma.OrderItem$returnItemsArgs;
 
+export const deliveredEntry = {
+  where: { status: "DELIVERED" },
+  select: { status: true, createdAt: true },
+} satisfies Prisma.Order$historyArgs;
+
+export function reachedAt(
+  history: { status: OrderStatus; createdAt: Date }[],
+  status: OrderStatus,
+) {
+  return history.find((entry) => entry.status === status)?.createdAt ?? null;
+}
+
 export function getReturnWindowEndsAt(deliveredAt: Date | null) {
   return deliveredAt
     ? new Date(deliveredAt.getTime() + RETURN_WINDOW_DAYS * 24 * 60 * 60 * 1000)

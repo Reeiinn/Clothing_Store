@@ -170,33 +170,30 @@ export const checkoutRouter = createTRPCRouter({
           }
         }
 
-        const subtotalCents = items.reduce(
-          (sum, item) => sum + item.variant.product.priceCents * item.quantity,
-          0,
-        );
-
         const createdOrder = await tx.order.create({
           data: {
             userId,
             status: "PROCESSING",
-            subtotalCents,
             shippingCents,
             shippingMethod: input.delivery,
             paymentMethod: input.payment.method,
             cardLast4,
-            shipFullName: input.address.fullName,
-            shipPhone: input.address.phone,
-            shipStreet: input.address.street,
-            shipUnit: input.address.unit ?? null,
-            shipCity: input.address.city,
-            shipProvince: input.address.province,
-            shipPostalCode: input.address.postalCode,
+            shippingAddress: {
+              create: {
+                fullName: input.address.fullName,
+                phone: input.address.phone,
+                street: input.address.street,
+                unit: input.address.unit ?? null,
+                city: input.address.city,
+                province: input.address.province,
+                postalCode: input.address.postalCode,
+              },
+            },
             items: {
               create: items.map((item) => ({
                 variantId: item.variantId,
                 productName: item.variant.product.name,
                 colorName: item.variant.color.name,
-                size: item.variant.size,
                 unitPriceCents: item.variant.product.priceCents,
                 quantity: item.quantity,
               })),

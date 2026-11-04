@@ -53,6 +53,7 @@ export default function AdminOrderDetailPage() {
   }
 
   const order = orderQuery.data;
+  const address = order.shippingAddress;
 
   return (
     <div className="flex flex-col gap-8">
@@ -97,7 +98,7 @@ export default function AdminOrderDetailPage() {
                   <td className={`${td} font-medium`}>{item.productName}</td>
                   <td className={td}>
                     {item.colorName} /{" "}
-                    <span className="font-mono">{item.size}</span>
+                    <span className="font-mono">{item.variant.size}</span>
                   </td>
                   <td className={`${td} text-right font-mono`}>
                     {item.quantity}
@@ -142,20 +143,22 @@ export default function AdminOrderDetailPage() {
       </section>
 
       <div className="grid gap-8 md:grid-cols-2">
-        <section className="flex flex-col gap-3">
-          <h2 className="text-xl font-semibold">Shipping address</h2>
-          <address className="border-ink border p-4 text-sm leading-relaxed not-italic">
-            <div className="font-medium">{order.shipFullName}</div>
-            <div>{order.shipPhone}</div>
-            <div>
-              {order.shipStreet}
-              {order.shipUnit ? `, ${order.shipUnit}` : ""}
-            </div>
-            <div>
-              {order.shipCity}, {order.shipProvince} {order.shipPostalCode}
-            </div>
-          </address>
-        </section>
+        {address && (
+          <section className="flex flex-col gap-3">
+            <h2 className="text-xl font-semibold">Shipping address</h2>
+            <address className="border-ink border p-4 text-sm leading-relaxed not-italic">
+              <div className="font-medium">{address.fullName}</div>
+              <div>{address.phone}</div>
+              <div>
+                {address.street}
+                {address.unit ? `, ${address.unit}` : ""}
+              </div>
+              <div>
+                {address.city}, {address.province} {address.postalCode}
+              </div>
+            </address>
+          </section>
+        )}
 
         <section className="flex flex-col gap-3">
           <h2 className="text-xl font-semibold">Status history</h2>

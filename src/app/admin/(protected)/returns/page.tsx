@@ -202,7 +202,7 @@ export default function AdminReturnsPage() {
                       </td>
                       <td className={td}>
                         {item.orderItem.colorName} /{" "}
-                        <span className="font-mono">{item.orderItem.size}</span>
+                        <span className="font-mono">{item.orderItem.variant.size}</span>
                       </td>
                       <td className={`${td} text-right font-mono`}>
                         {item.quantity}

@@ -83,7 +83,7 @@ export function OrderTracking({
                     <div className="flex min-w-0 flex-1 flex-col gap-0.5">
                       <p className="text-sm font-medium">{item.productName}</p>
                       <p className="text-muted text-sm">
-                        {item.colorName} / {item.size} · Qty {item.quantity}
+                        {item.colorName} / {item.variant.size} · Qty {item.quantity}
                       </p>
                     </div>
                     <p className="shrink-0 text-sm">
