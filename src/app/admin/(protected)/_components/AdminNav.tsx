@@ -43,7 +43,10 @@ export function AdminNav() {
       })}
       <button
         type="button"
-        onClick={() => signOut({ redirectTo: "/login" })}
+        onClick={async () => {
+          await signOut({ redirect: false });
+          window.location.assign("/login");
+        }}
         className={cx(item, "hover:bg-ink/5 text-left md:mt-4")}
       >
         Sign out
