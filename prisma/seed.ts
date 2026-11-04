@@ -281,7 +281,6 @@ async function main() {
           variantId: v.id,
           productName: v.product.name,
           colorName: v.color.name,
-          size: v.size,
           unitPriceCents: v.product.priceCents,
           quantity,
         };
@@ -299,25 +298,23 @@ async function main() {
       data: {
         userId: customer.id,
         status: o.status,
-        subtotalCents,
         shippingCents,
         shippingMethod: o.shippingMethod,
         paymentMethod: o.paymentMethod,
         cardLast4: o.paymentMethod === "CARD" ? "4242" : null,
         trackingNumber: shipped ? `PH0000${o.daysAgo}` : null,
-        shipFullName: address.fullName,
-        shipPhone: address.phone,
-        shipStreet: address.street,
-        shipUnit: address.unit,
-        shipCity: address.city,
-        shipProvince: address.province,
-        shipPostalCode: address.postalCode,
+        shippingAddress: {
+          create: {
+            fullName: address.fullName,
+            phone: address.phone,
+            street: address.street,
+            unit: address.unit,
+            city: address.city,
+            province: address.province,
+            postalCode: address.postalCode,
+          },
+        },
         createdAt: daysAgo(o.daysAgo),
-        shippedAt: shipped ? daysAgo(o.daysAgo - 1) : null,
-        deliveredAt:
-          o.status === "DELIVERED"
-            ? daysAgo(o.daysAgo - path.length + 1)
-            : null,
         items: { create: items },
         history: {
           create: path.map(([status, note], i) => ({

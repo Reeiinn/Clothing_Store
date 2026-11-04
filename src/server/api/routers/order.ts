@@ -10,7 +10,9 @@ import {
 import {
   activeReturnItems,
   canRequestReturn,
+  deliveredEntry,
   getReturnWindowEndsAt,
+  reachedAt,
 } from "~/server/return-policy";
 import { withTotal } from "~/server/order-total";
 import { deliveryOption } from "~/server/shipping";
@@ -34,12 +36,12 @@ export const orderRouter = createTRPCRouter({
           number: true,
           createdAt: true,
           status: true,
-          subtotalCents: true,
           shippingCents: true,
-          deliveredAt: true,
+          history: deliveredEntry,
           items: {
             select: {
               quantity: true,
+              unitPriceCents: true,
               returnItems: activeReturnItems,
             },
           },
@@ -52,7 +54,10 @@ export const orderRouter = createTRPCRouter({
         status: order.status,
         itemCount: order.items.reduce((sum, item) => sum + item.quantity, 0),
         totalCents: withTotal(order).totalCents,
-        canRequestReturn: canRequestReturn(order),
+        canRequestReturn: canRequestReturn({
+          ...order,
+          deliveredAt: reachedAt(order.history, "DELIVERED"),
+        }),
       }));
     }),
 
@@ -67,7 +72,12 @@ export const orderRouter = createTRPCRouter({
         include: {
           items: {
             include: {
-              variant: { select: { product: { select: { imageUrl: true } } } },
+              variant: {
+                select: {
+                  size: true,
+                  product: { select: { imageUrl: true } },
+                },
+              },
               returnItems: activeReturnItems,
             },
           },
@@ -80,14 +90,18 @@ export const orderRouter = createTRPCRouter({
       }
 
       const { maxDays } = deliveryOption(order.shippingMethod);
+      const shippedAt = reachedAt(order.history, "SHIPPED");
+      const deliveredAt = reachedAt(order.history, "DELIVERED");
 
       return {
         ...withTotal(order),
+        shippedAt,
+        deliveredAt,
         estimatedDelivery: new Date(
           order.createdAt.getTime() + maxDays * 24 * 60 * 60 * 1000,
         ),
-        canRequestReturn: canRequestReturn(order),
-        returnWindowEndsAt: getReturnWindowEndsAt(order.deliveredAt),
+        canRequestReturn: canRequestReturn({ ...order, deliveredAt }),
+        returnWindowEndsAt: getReturnWindowEndsAt(deliveredAt),
       };
     }),
 
@@ -162,11 +176,10 @@ export const orderRouter = createTRPCRouter({
           select: {
             number: true,
             status: true,
-            subtotalCents: true,
             shippingCents: true,
             createdAt: true,
             user: { select: { name: true, email: true } },
-            items: { select: { quantity: true } },
+            items: { select: { quantity: true, unitPriceCents: true } },
           },
         }),
         ctx.db.order.count({ where }),
@@ -187,7 +200,8 @@ export const orderRouter = createTRPCRouter({
         where: { number: input.orderNumber },
         include: {
           user: { select: { name: true, email: true } },
-          items: true,
+          shippingAddress: true,
+          items: { include: { variant: { select: { size: true } } } },
           history: { orderBy: { createdAt: "asc" } },
         },
       });
@@ -247,13 +261,7 @@ export const orderRouter = createTRPCRouter({
           data: {
             status: input.status,
             ...(input.status === "SHIPPED"
-              ? {
-                  trackingNumber: input.trackingNumber,
-                  shippedAt: new Date(),
-                }
-              : {}),
-            ...(input.status === "DELIVERED"
-              ? { deliveredAt: new Date() }
+              ? { trackingNumber: input.trackingNumber }
               : {}),
           },
         });

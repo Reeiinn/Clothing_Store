@@ -24,9 +24,12 @@ export const dashboardRouter = createTRPCRouter({
       }),
       ctx.db.variant.count({ where: { stock: 0 } }),
       ctx.db.variant.count({ where: { stock: { gte: 1, lte: threshold } } }),
-      ctx.db.order.aggregate({
+      ctx.db.order.findMany({
         where: { createdAt: { gte: monthStart }, status: { not: "CANCELLED" } },
-        _sum: { subtotalCents: true, shippingCents: true },
+        select: {
+          shippingCents: true,
+          items: { select: { unitPriceCents: true, quantity: true } },
+        },
       }),
       ctx.db.order.findMany({
         orderBy: { createdAt: "desc" },
@@ -34,10 +37,10 @@ export const dashboardRouter = createTRPCRouter({
         select: {
           number: true,
           status: true,
-          subtotalCents: true,
           shippingCents: true,
           createdAt: true,
           user: { select: { name: true, email: true } },
+          items: { select: { unitPriceCents: true, quantity: true } },
         },
       }),
       ctx.db.variant.findMany({
@@ -59,8 +62,10 @@ export const dashboardRouter = createTRPCRouter({
       openReturns,
       soldOutCount,
       lowStockCount,
-      salesThisMonthCents:
-        (sales._sum.subtotalCents ?? 0) + (sales._sum.shippingCents ?? 0),
+      salesThisMonthCents: sales.reduce(
+        (sum, order) => sum + withTotal(order).totalCents,
+        0,
+      ),
       recentOrders: recentOrders.map(withTotal),
       needsStock: needsStock.map((variant) => ({
         variantId: variant.id,

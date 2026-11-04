@@ -9,7 +9,9 @@ import {
 } from "~/server/api/trpc";
 import {
   activeReturnItems,
+  deliveredEntry,
   getReturnWindowEndsAt,
+  reachedAt,
   returnBlockReason,
   returnedQty,
 } from "~/server/return-policy";
@@ -29,14 +31,19 @@ export const returnsRouter = createTRPCRouter({
           userId: ctx.session.user.id,
         },
         include: {
+          history: deliveredEntry,
           items: {
             select: {
               id: true,
               productName: true,
               colorName: true,
-              size: true,
               quantity: true,
-              variant: { select: { product: { select: { imageUrl: true } } } },
+              variant: {
+                select: {
+                  size: true,
+                  product: { select: { imageUrl: true } },
+                },
+              },
               returnItems: activeReturnItems,
             },
           },
@@ -47,6 +54,8 @@ export const returnsRouter = createTRPCRouter({
         throw new TRPCError({ code: "NOT_FOUND", message: "Order not found." });
       }
 
+      const deliveredAt = reachedAt(order.history, "DELIVERED");
+
       const items = order.items.map((item) => {
         const alreadyReturnedQty = returnedQty(item);
         return {
@@ -54,7 +63,7 @@ export const returnsRouter = createTRPCRouter({
           productName: item.productName,
           colorName: item.colorName,
           imageUrl: item.variant.product.imageUrl,
-          size: item.size,
+          size: item.variant.size,
           boughtQty: item.quantity,
           alreadyReturnedQty,
           returnableQty: Math.max(0, item.quantity - alreadyReturnedQty),
@@ -62,7 +71,7 @@ export const returnsRouter = createTRPCRouter({
       });
 
       const reason =
-        returnBlockReason(order) ??
+        returnBlockReason({ ...order, deliveredAt }) ??
         (items.some((item) => item.returnableQty > 0)
           ? undefined
           : "No items remain eligible for return.");
@@ -70,7 +79,7 @@ export const returnsRouter = createTRPCRouter({
       return {
         eligible: !reason,
         ...(reason ? { reason } : {}),
-        returnWindowEndsAt: getReturnWindowEndsAt(order.deliveredAt),
+        returnWindowEndsAt: getReturnWindowEndsAt(deliveredAt),
         items,
       };
     }),
@@ -103,8 +112,8 @@ export const returnsRouter = createTRPCRouter({
       return ctx.db.$transaction(async (tx) => {
         const lockedOrders = await tx.$queryRaw<{ id: string }[]>`
           SELECT "id"
-          FROM "Order"
-          WHERE "number" = ${input.orderNumber} AND "userId" = ${userId}
+          FROM "order"
+          WHERE "number" = ${input.orderNumber} AND "user_id" = ${userId}
           FOR UPDATE
         `;
 
@@ -118,6 +127,7 @@ export const returnsRouter = createTRPCRouter({
         const order = await tx.order.findUniqueOrThrow({
           where: { id: lockedOrders[0].id },
           include: {
+            history: deliveredEntry,
             items: {
               select: {
                 id: true,
@@ -129,7 +139,10 @@ export const returnsRouter = createTRPCRouter({
           },
         });
 
-        const blocked = returnBlockReason(order);
+        const blocked = returnBlockReason({
+          ...order,
+          deliveredAt: reachedAt(order.history, "DELIVERED"),
+        });
         if (blocked) {
           throw new TRPCError({ code: "BAD_REQUEST", message: blocked });
         }
@@ -183,8 +196,8 @@ export const returnsRouter = createTRPCRouter({
               select: {
                 productName: true,
                 colorName: true,
-                size: true,
                 unitPriceCents: true,
+                variant: { select: { size: true } },
               },
             },
           },
@@ -221,8 +234,8 @@ export const returnsRouter = createTRPCRouter({
                   select: {
                     productName: true,
                     colorName: true,
-                    size: true,
                     unitPriceCents: true,
+                    variant: { select: { size: true } },
                   },
                 },
               },
