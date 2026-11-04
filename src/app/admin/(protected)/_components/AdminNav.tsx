@@ -1,5 +1,6 @@
 "use client";
 
+import { signOut } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -16,7 +17,7 @@ const links = [
 const item =
   "rounded-ui flex min-h-11 items-center px-3 text-sm whitespace-nowrap";
 
-export function AdminNav({ storeUrl }: { storeUrl: string }) {
+export function AdminNav() {
   const pathname = usePathname();
 
   return (
@@ -40,12 +41,13 @@ export function AdminNav({ storeUrl }: { storeUrl: string }) {
           </Link>
         );
       })}
-      <a
-        href={storeUrl}
-        className={cx(item, "underline underline-offset-2 md:mt-4")}
+      <button
+        type="button"
+        onClick={() => signOut({ redirectTo: "/login" })}
+        className={cx(item, "hover:bg-ink/5 text-left md:mt-4")}
       >
-        View store
-      </a>
+        Sign out
+      </button>
     </nav>
   );
 }

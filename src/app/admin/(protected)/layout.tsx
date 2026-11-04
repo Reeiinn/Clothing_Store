@@ -1,8 +1,6 @@
-import { headers } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { requestHost, storeHost } from "~/lib/hosts";
 import { auth } from "~/server/auth";
 import { AdminNav } from "./_components/AdminNav";
 
@@ -11,8 +9,6 @@ export default async function AdminLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   const session = await auth();
   if (session?.user.role !== "ADMIN") redirect("/login");
-
-  const host = requestHost(await headers());
 
   return (
     <div className="min-h-screen md:flex">
@@ -23,7 +19,7 @@ export default async function AdminLayout({
             ADMIN
           </span>
         </Link>
-        <AdminNav storeUrl={`//${storeHost(host)}/products`} />
+        <AdminNav />
       </aside>
       <main className="min-w-0 flex-1 px-4 py-8 sm:px-8">{children}</main>
     </div>
